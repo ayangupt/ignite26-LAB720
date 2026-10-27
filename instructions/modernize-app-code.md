@@ -12,7 +12,7 @@ This lab uses the **.NET track** of the Caldova Bank training estate. Each modul
 
 **Expected result:** You can explain what changed, show the checks you performed, and identify anything not yet verified.
 
-**If blocked:** Use the prepared `finish` folders and ask a proctor. Do not install tools, create resources, or switch to personal accounts.
+**If blocked:** Use the prepared `finish` folders and ask the facilitator. Do not install tools, create resources, or switch to personal accounts.
 
 ---
 
@@ -28,9 +28,9 @@ This lab uses the **.NET track** of the Caldova Bank training estate. Each modul
    Test-Path C:\lab\caldova\modules\module-01-assess\start
    ```
 
-3. If GitHub sign-in is missing, open `https://github.com/enterprises/skillable-events/sso` **inside the VM** and sign in with the lab account from the **Resources** tab. Then run `gh auth login` and use **Sign In > Continue with GitHub** in VS Code with the same browser session. Use the assigned lab account, not a personal GitHub account.
+3. If GitHub sign-in is missing, open `https://github.com/enterprises/skillable-events/sso` **inside the VM**. Use the **Resources > Azure Portal** username and TAP keyboard controls in the matching Microsoft sign-in fields. Do not enter the Azure password into GitHub's standard password form. Then run `gh auth login` and use **Sign In > Continue with GitHub** in VS Code with the same browser session. Use the assigned lab account, not a personal GitHub account.
 
-**Expected result:** `gh auth status` succeeds and the folder check returns `True`. Use **Auto** as the model unless a proctor tells you otherwise.
+**Expected result:** `gh auth status` succeeds and the folder check returns `True`. Use **Auto** as the model unless the facilitator tells you otherwise.
 
 ---
 
@@ -125,7 +125,7 @@ The bank policy and rulebook are workshop examples, not approved organizational 
 
 **Expected result:** Every requirement maps to a task, and `pii-masking` appears on the logging task. Your live plan, if it finishes, should show the same coverage; wording and task counts can differ.
 
-**If blocked:** If the live plan stalls or the rulebook load message is missing, keep reviewing the prepared plan and tell a proctor.
+**If blocked:** If the live plan stalls or the rulebook load message is missing, keep reviewing the prepared plan and tell the facilitator.
 
 **Checkpoint:** Prepared plan reviewed against the rulebook.
 
@@ -161,7 +161,7 @@ The `modernization/dotnet` branch is already prepared with the PII skill and the
 
 **Expected result:** The agent works on the database, logging/PII, and validation tasks.
 
-**If blocked:** If the task state is not as expected, ask a proctor. Do not start a second execution while the first is active.
+**If blocked:** If the task state is not as expected, ask the facilitator. Do not start a second execution while the first is active.
 
 ---
 
@@ -250,8 +250,8 @@ If your agent is still running, note its pending tasks. Do not start duplicates 
 
 | Symptom | Next action |
 |---|---|
-| Lab folders, tool, or model missing | Ask a proctor; do not install or switch to personal access |
-| No `Rulebook loaded (3 files)` message | Check the working directory, feature flag, and `gh auth status`; tell a proctor |
+| Lab folders, tool, or model missing | Ask the facilitator; do not install or switch to personal access |
+| No `Rulebook loaded (3 files)` message | Check the working directory, feature flag, and `gh auth status`; tell the facilitator |
 | Planning or execution takes too long | Use the prepared plan or result and record the live run as pending |
 | Build passes but sign-in fails | Inspect the gateway/portal authentication contract |
 
