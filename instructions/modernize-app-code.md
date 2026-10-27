@@ -151,7 +151,7 @@ The `modernization/dotnet` branch is already prepared with the PII skill and the
 3. Start the remaining tasks from PowerShell:
 
    ```powershell
-   modernize plan execute "Execute all remaining tasks, starting with the first unfinished task. Do not stop after one task. Do not run the deployment task. Keep public routes and business behavior. Build after each task." `
+   modernize plan execute "Execute all remaining tasks, starting with the first unfinished task. Do not stop after one task. Do not run the deployment task." `
      --plan-name caldova-dotnet-modernization `
      --source apps\CaldovaAuthGateway `
      --no-tty
@@ -223,8 +223,8 @@ The `modernization/dotnet` branch is already prepared with the PII skill and the
 4. In a second terminal, check the routes:
 
    ```powershell
-   curl.exe http://localhost:8080/health
-   curl.exe http://localhost:8080/WhoAmI.ashx
+   curl.exe -i http://localhost:8080/health
+   curl.exe -i http://localhost:8080/WhoAmI.ashx
    ```
 
    Expect HTTP 200, and `{"authenticated":false}` from `/WhoAmI.ashx`. Stop the app with **Ctrl+C**.
