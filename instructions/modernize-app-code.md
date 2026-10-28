@@ -184,7 +184,15 @@ The `modernization/dotnet` branch is already prepared with the PII skill and the
    - Look for the legacy `FROM mono:6.12` base image in the Dockerfile.
    - Check how the portal recognizes a user signed in through the gateway's `/WhoAmI.ashx`.
 
-**Expected result:** You can explain the code changes and name unresolved requirements. This prepared result is a review example; its successful build is not proof of compliance.
+4. Spend about four minutes on the separately prepared final state:
+
+   ```powershell
+   code C:\lab\caldova\modules\module-03-execute\final\dotnet
+   ```
+
+   Confirm all three applications target .NET 10, compare the portal's Microsoft-based non-root Dockerfile with the review example, and read `VALIDATION.md`. This is prepared evidence, not the output of your live run. Do not rerun the full SQL-backed suite during this lab.
+
+**Expected result:** You can explain the review gaps and how the validated final state addresses them. Distinguish local tests and container checks from the Azure and central-rulebook checks that remain unverified. The intentionally flawed finish example remains useful; the final state complements it rather than replacing it.
 
 ---
 
