@@ -48,7 +48,7 @@ This lab uses the **.NET track** of the Caldova Bank training estate. Each modul
    Get-Content .github\modernize\assess-config.yaml
    ```
 
-   The report was produced by `modernize assess` with **Upgrade**, **Cloud Readiness**, and **Security** domains, **Full analysis**, .NET 10, and Azure Container Apps as the target. The exact command is on the **Reference** page.
+   The supplied inputs select `CaldovaAuthGateway`, use **Full analysis**, and target .NET 10 on Azure Container Apps. The prepared portfolio below is an earlier estate-wide assessment, not output from these current inputs. The command for a new assessment is in **Reference**; do not run it during this shortened lab.
 
 2. In File Explorer, open the prepared report:
 
@@ -56,10 +56,10 @@ This lab uses the **.NET track** of the Caldova Bank training estate. Each modul
    C:\lab\caldova\modules\module-01-assess\start\.github\modernize\assessment-prebuilt\reports-<timestamp>\index.html
    ```
 
-   Open the actual `reports-...` folder; do not type `<timestamp>` literally.
+   Open the actual `reports-...` folder; do not type `<timestamp>` literally. If Windows asks which app to use for `index.html`, select **Microsoft Edge > Just once**.
 
-3. Review the portfolio, then open `repos\CaldovaAuthGateway`. Identify unsupported frameworks, security findings, and cloud-readiness issues.
-4. Open `facts\data-architecture.md` and `facts\configuration-inventory.md` for `CaldovaAuthGateway`. Find `System.Data.SqlClient`, SQL-login settings (`DB_USER`/`DB_PASSWORD`), and certificate-validation settings.
+3. Review the portfolio, then open `repos\ZavaAuthGateway` inside that report folder. The supplied historical report retains the original **Zava** names; the working application is now called **CaldovaAuthGateway**. Do not rename the report files. Identify unsupported frameworks, security findings, and cloud-readiness issues.
+4. In that gateway report folder, open `facts\data-architecture.md` and `facts\configuration-inventory.md`. Find `System.Data.SqlClient`, SQL-login settings (`DB_USER`/`DB_PASSWORD`), and certificate-validation settings.
 
 **Expected result:** You can explain why `CaldovaAuthGateway` is modernized first: `CaldovaLoanPortal` signs in through it. You can name the database authentication changes the plan must cover.
 
@@ -103,25 +103,25 @@ The bank policy and rulebook are workshop examples, not approved organizational 
 
 2. Run `modernize`. Select **Plan > Create modernization plan > Keep the plan local**. Select `CaldovaAuthGateway`, name the plan `caldova-dotnet-modernization`, and paste the goal. Answer clarifying questions using the rulebook.
 3. Look for **`Rulebook loaded (3 files)`**. Leave the run open and continue.
-4. Open the prepared plan in VS Code:
+4. Leave the planning terminal open. In another PowerShell terminal, select the prepared branch before opening the plan in VS Code:
 
    ```powershell
-   code C:\lab\caldova\modules\module-03-execute\start\apps\CaldovaAuthGateway
+   cd C:\lab\caldova\modules\module-03-execute\start
+   git switch modernization/dotnet
+   code apps\CaldovaAuthGateway
    ```
 
-   In Explorer, open `.github > modernize > caldova-dotnet-modernization > plan.md` and use **Open Preview**. Also open `.metadata\tasks.json` and `rulebook-compliance.md`.
+   The prepared plan is on `modernization/dotnet`, not `main`. In Explorer, open `.github > modernize > caldova-dotnet-modernization > plan.md` and use **Open Preview**. Also open `.metadata\tasks.json` and `rulebook-compliance.md`.
 
 5. Match each requirement to a task. Treat the compliance report as a lead, not proof.
 
-   | Requirement | Evidence in the plan |
-   |---|---|
-   | Supported runtime | .NET 10, SDK-style project |
-   | Passwordless database access | Managed identity; stored SQL credentials removed |
-   | Validated TLS | `Encrypt=True;TrustServerCertificate=False` |
-   | No personal data in logs | Structured logging with the `pii-masking` skill |
-   | Supported libraries | `System.Data.SqlClient` replaced; vulnerabilities scanned |
-   | Preserved behavior | Public routes and `/WhoAmI.ashx` sign-in contract |
-   | Deployable result | Health endpoint, environment-based settings, compliant Dockerfile |
+   - **Supported runtime:** .NET 10, SDK-style project.
+   - **Passwordless database access:** Managed identity; stored SQL credentials removed.
+   - **Validated TLS:** `Encrypt=True` and `TrustServerCertificate=False`.
+   - **No personal data in logs:** Structured logging with the `pii-masking` skill.
+   - **Supported libraries:** `System.Data.SqlClient` replaced; vulnerabilities scanned.
+   - **Preserved behavior:** Public routes and the `/WhoAmI.ashx` sign-in contract.
+   - **Deployable result:** Health endpoint, environment-based settings, compliant Dockerfile.
 
 **Expected result:** Every requirement maps to a task, and `pii-masking` appears on the logging task. Your live plan, if it finishes, should show the same coverage; wording and task counts can differ.
 
@@ -144,7 +144,7 @@ The `modernization/dotnet` branch is already prepared with the PII skill and the
    ```powershell
    cd C:\lab\caldova\modules\module-03-execute\start
    git switch modernization/dotnet
-   git log --oneline
+   git --no-pager log --oneline
    ```
 
 2. In `tasks.json`, confirm the first two tasks (runtime upgrade and Web Forms conversion) show `"status": "success"`.
@@ -171,12 +171,12 @@ The `modernization/dotnet` branch is already prepared with the PII skill and the
 
 ### Do this
 
-1. Open a second PowerShell terminal:
+1. Leave the execution terminal running and open another PowerShell terminal:
 
    ```powershell
    cd C:\lab\caldova\modules\module-03-execute\finish
    git switch modernization/dotnet
-   git diff --stat main -- apps/CaldovaLoanPortal
+   git --no-pager diff --stat main -- apps/CaldovaLoanPortal
    ```
 
 2. Find the ASP.NET Core replacement for the old Web Forms code. Inspect the database configuration and public routes.
@@ -269,7 +269,7 @@ If your agent is still running, note its pending tasks. Do not start duplicates 
 
 These are not additional required steps.
 
-### How the assessment was produced
+### Running a new assessment
 
 Run from `module-01-assess\start`:
 
@@ -295,13 +295,11 @@ modernize plan create (Get-Content goals\dotnet.txt -Raw) `
 
 ### The estate
 
-| Repository | Starting point | Relationship |
-|---|---|---|
-| `CaldovaAuthGateway` | Web Forms/handlers, .NET Framework 4.8 | Sign-in provider |
-| `CaldovaLoanPortal` | Web Forms, .NET Framework 4.8 | Signs in through the gateway |
-| `CaldovaRiskEngine` | WCF, .NET Framework 4.8 | Credit-scoring service |
-| `CaldovaLedger` | Servlets, Java 17 | Java estate (not used in this lab) |
-| `CaldovaPayGateway` | Struts 1.3.10, Java 8 | Java estate (not used in this lab) |
-| `CaldovaFraudDetector` | Struts 2.5.30, Java 11 | Java estate (not used in this lab) |
+- **CaldovaAuthGateway:** Web Forms/handlers on .NET Framework 4.8; sign-in provider.
+- **CaldovaLoanPortal:** Web Forms on .NET Framework 4.8; signs in through the gateway.
+- **CaldovaRiskEngine:** WCF on .NET Framework 4.8; credit-scoring service.
+- **CaldovaLedger:** Servlets on Java 17; Java estate, not used in this lab.
+- **CaldovaPayGateway:** Struts 1.3.10 on Java 8; Java estate, not used in this lab.
+- **CaldovaFraudDetector:** Struts 2.5.30 on Java 11; Java estate, not used in this lab.
 
 The full version of this exercise, including the Java track and live assessment, is in the PREL38 pre-day lab.
