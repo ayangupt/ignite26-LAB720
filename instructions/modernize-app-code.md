@@ -61,6 +61,8 @@ This lab uses the **.NET track** of the Caldova Bank training estate. Each modul
 3. Review the portfolio, then open `repos\ZavaAuthGateway` inside that report folder. The supplied historical report retains the original **Zava** names; the working application is now called **CaldovaAuthGateway**. Do not rename the report files. Identify unsupported frameworks, security findings, and cloud-readiness issues.
 4. In that gateway report folder, open `facts\data-architecture.md` and `facts\configuration-inventory.md`. Find `System.Data.SqlClient`, SQL-login settings (`DB_USER`/`DB_PASSWORD`), and certificate-validation settings.
 
+These are findings about how the application uses a database, not checks against a running database. An inferred data model does not confirm that tables or seed data exist, that a connection works, or that a migration has completed.
+
 **Expected result:** You can explain why `CaldovaAuthGateway` is modernized first: `CaldovaLoanPortal` signs in through it. You can name the database authentication changes the plan must cover.
 
 **Checkpoint:** Provider identified and its database connection risks listed.
@@ -74,7 +76,7 @@ This lab uses the **.NET track** of the Caldova Bank training estate. Each modul
 ### Do this
 
 1. Open `C:\lab\caldova\modules\module-02-plan\start`. Skim `rulebook\policies.md` and `rulebook\targets.md`. The policy requires managed identity, certificate validation, no personal data in logs, supported dependencies, health checks, and Azure Container Apps readiness.
-2. Open `.github\modernize\config.json` and check that `feature_flags.rulebook` is `true` and `portfolio_url` points to the central rulebook repository.
+2. Open `.github\modernize\config.json` and check that `feature_flags.rulebook` is `true` and `portfolio_url` points to the repository supplied for the lab's rulebook setup. Do not invent a URL or create a repository unless the facilitator provides that setup procedure.
 3. Copy the PII masking skill into the gateway:
 
    ```powershell
@@ -87,6 +89,8 @@ This lab uses the **.NET track** of the Caldova Bank training estate. Each modul
 
 The bank policy and rulebook are workshop examples, not approved organizational policy.
 
+**If blocked:** If the configuration is missing, the rulebook feature is disabled, or repository access is unavailable, tell the facilitator. Skip live planning and execution; start with item 4 of step 3 to review the prepared plan, then continue to the code review in step 5. Run step 6 only if the .NET SDK and package access are available. Record skipped runs and central-rulebook loading as **not verified**; reading local policies is not proof that the CLI loaded them.
+
 ---
 
 ## 3. Start the plan, then review the prepared plan
@@ -98,12 +102,13 @@ The bank policy and rulebook are workshop examples, not approved organizational 
 1. Copy the goal:
 
    ```powershell
+   cd C:\lab\caldova\modules\module-02-plan\start
    Get-Content goals\dotnet.txt -Raw | Set-Clipboard
    ```
 
 2. Run `modernize`. Select **Plan > Create modernization plan > Keep the plan local**. Select `CaldovaAuthGateway`, name the plan `caldova-dotnet-modernization`, and paste the goal. Answer clarifying questions using the rulebook.
 3. Look for **`Rulebook loaded (3 files)`**. Leave the run open and continue.
-4. Leave the planning terminal open. In another PowerShell terminal, select the prepared branch before opening the plan in VS Code:
+4. Leave any live planning run open. In another PowerShell terminal, select the prepared branch before opening the plan in VS Code:
 
    ```powershell
    cd C:\lab\caldova\modules\module-03-execute\start
@@ -125,7 +130,7 @@ The bank policy and rulebook are workshop examples, not approved organizational 
 
 **Expected result:** Every requirement maps to a task, and `pii-masking` appears on the logging task. Your live plan, if it finishes, should show the same coverage; wording and task counts can differ.
 
-**If blocked:** If the live plan stalls or the rulebook load message is missing, keep reviewing the prepared plan and tell the facilitator.
+**If blocked:** If the live plan stalls, keep reviewing the prepared plan and record the run as pending. If the rulebook load message is missing, tell the facilitator and do not start execution on the assumption that the policies were applied.
 
 **Checkpoint:** Prepared plan reviewed against the rulebook.
 
@@ -148,7 +153,7 @@ The `modernization/dotnet` branch is already prepared with the PII skill and the
    ```
 
 2. In `tasks.json`, confirm the first two tasks (runtime upgrade and Web Forms conversion) show `"status": "success"`.
-3. Start the remaining tasks from PowerShell:
+3. Check `.github\modernize\config.json` in this execution module's working directory as in step 2. Do not assume the planning module's configuration applies here. If the rulebook setup is unavailable, skip this live run and continue to step 5. Otherwise, start the remaining tasks from PowerShell:
 
    ```powershell
    modernize plan execute "Execute all remaining tasks, starting with the first unfinished task. Do not stop after one task. Do not run the deployment task." `
@@ -171,7 +176,7 @@ The `modernization/dotnet` branch is already prepared with the PII skill and the
 
 ### Do this
 
-1. Leave the execution terminal running and open another PowerShell terminal:
+1. Leave any live execution running and open another PowerShell terminal:
 
    ```powershell
    cd C:\lab\caldova\modules\module-03-execute\finish
@@ -237,7 +242,7 @@ The `modernization/dotnet` branch is already prepared with the PII skill and the
 
    Expect HTTP 200, and `{"authenticated":false}` from `/WhoAmI.ashx`. Stop the app with **Ctrl+C**.
 
-5. Return to your live execution. If it finished, repeat these checks on `module-03-execute\start\apps\CaldovaAuthGateway`. Otherwise, record it as pending.
+5. If you started a live execution, return to it. If it finished, repeat these checks on `module-03-execute\start\apps\CaldovaAuthGateway`; if it is still running, record it as pending. If you skipped execution, record it as not started.
 
 **Expected result:** You have build and test evidence and a compatibility check. These local checks do not prove Azure SQL access, signed-in behavior, or telemetry delivery.
 
@@ -246,6 +251,8 @@ The `modernization/dotnet` branch is already prepared with the PII skill and the
 ## Finish
 
 ### Check your outcome
+
+Mark only the outcomes you completed. Distinguish your own live runs from the supplied artifacts, and record each skipped or unfinished run as **not started** or **pending**. The review-only fallback does not complete the full hands-on exercise.
 
 - You identified the provider and its database risks from the assessment.
 - You checked the plan against the rulebook and confirmed the PII skill is used.
