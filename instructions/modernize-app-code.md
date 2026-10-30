@@ -1,46 +1,49 @@
 # Modernize application code with GitHub Copilot
 
-**Goal:** Read an application estate assessment, create a rulebook-guided plan, and check modernized code rather than trusting a successful agent response.
+Read an application assessment, start a rulebook-guided modernization, and check the result rather than trusting a successful agent response.
 
 | Stage | Time | Your result |
 |---|---|---|
-| Assess | 8 minutes | Assessment read and the provider's database risks identified |
-| Plan | 12 minutes | A live plan started and the prepared plan reviewed against the rulebook |
-| Execute and verify | 25 minutes | An execution started and a prepared result built, tested, and checked |
+| Assess | 8 minutes | Identify the sign-in provider and its database risks |
+| Plan | 12 minutes | Load shared rules, start a plan, and review the prepared plan |
+| Execute and verify | 25 minutes | Start execution and check prepared code, tests, and routes |
 
-This lab uses the **.NET track** of the Caldova Bank training estate. Each module has a `start` folder (before) and a `finish` folder (after) under `C:\lab\caldova\modules`. You start the slow agent steps, then review the prepared result instead of waiting.
+This is the **45-minute .NET track** for **Caldova Bank**. Under `C:\lab\caldova\modules`, each exercise has a `start` folder (before) and a `finish` folder (prepared after). A separate `final\dotnet` snapshot shows the validated three-application end state. Do not replace the deliberately flawed `finish` review example with `final`.
 
-**Expected result:** You can explain what changed, show the checks you performed, and identify anything not yet verified.
+Start the slow agent work, then inspect the prepared result instead of waiting. Keep a short notes file: distinguish **my run**, **prepared example**, **pending**, and **not run**.
 
-**If blocked:** Use the prepared `finish` folders and ask the facilitator. Do not install tools, create resources, or switch to personal accounts.
+**Separate workloads:** Caldova Bank is not Caldova Retail Co. in the later SRE Agent module. Reuse the assigned VM and accounts, but follow each module's repositories and resource names.
 
 ---
 
 ## Get ready
 
-### Do this
+Continue in the assigned VM after **Start > GitHub and Copilot** in the lab manual. If Windows asks you to sign in again, use the VM controls on **Resources**.
 
-1. Select the lab VM and sign in to Windows with the credentials on the **Resources** tab.
-2. Open Windows Terminal with **PowerShell inside the VM** and check the existing sessions:
+1. Open **Windows Terminal > PowerShell inside the VM** and check:
 
    ```powershell
    gh auth status
    Test-Path C:\lab\caldova\modules\module-01-assess\start
+   modernize --version
    ```
 
-3. If GitHub sign-in is missing, open `https://github.com/enterprises/skillable-events/sso` **inside the VM**. Use the **Resources > Azure Portal** username and TAP keyboard controls in the matching Microsoft sign-in fields. Do not enter the Azure password into GitHub's standard password form. Then run `gh auth login` and use **Sign In > Continue with GitHub** in VS Code with the same browser session. Use the assigned lab account, not a personal GitHub account.
+2. Only if GitHub CLI is signed out, keep the lab's Enterprise SSO page open in the VM browser and run `gh auth login`. Choose **GitHub.com > Login with a web browser**, complete the one-time-code prompt, and authorize the expected GitHub CLI request. The browser, VS Code and `gh` have separate sessions even though they use the same assigned identity.
+3. Use **Auto** in VS Code. Every Modernize command below also passes **`--model auto`**; the VS Code model picker does not set the CLI model.
 
-**Expected result:** `gh auth status` succeeds and the folder check returns `True`. Use **Auto** as the model unless the facilitator tells you otherwise.
+**Command entry:** Focus the PowerShell prompt inside the VM before using Skillable's **Type** button or pasting. Wait until the whole command appears, then press **Enter inside the VM**. For a multiline-paste warning, check the text and select **Paste anyway** only for the expected lab command. Trust only the supplied lab workspace when VS Code asks.
+
+**Before you continue:** The folder check is `True`, `gh auth status` succeeds, and the CLI is available. If a tool or folder is missing, ask the facilitator; do not install software, change permissions or switch to a personal account.
 
 ---
 
 ## 1. Read the assessment
 
-**Goal:** Understand the estate and find the provider's database risks. The assessment has already been run for you; a live run takes longer than this lab allows.
+**Step 1 of 6 - About 8 minutes**
 
-### Do this
+Identify the **provider** (the service other applications call) before its **consumer** (the application that depends on it). Here, CaldovaLoanPortal signs in through CaldovaAuthGateway.
 
-1. Open the assessment inputs to see what was assessed and how:
+1. Inspect the supplied inputs:
 
    ```powershell
    cd C:\lab\caldova\modules\module-01-assess\start
@@ -48,67 +51,92 @@ This lab uses the **.NET track** of the Caldova Bank training estate. Each modul
    Get-Content .github\modernize\assess-config.yaml
    ```
 
-   The supplied inputs select `CaldovaAuthGateway`, use **Full analysis**, and target .NET 10 on Azure Container Apps. The prepared portfolio below is an earlier estate-wide assessment, not output from these current inputs. The command for a new assessment is in **Reference**; do not run it during this shortened lab.
+   These inputs select the gateway and target .NET 10 on Azure Container Apps with Full analysis. The prepared portfolio is an earlier estate-wide report, not output from these current inputs. **Do not run a new assessment in this shortened lab.**
 
-2. In File Explorer, open the prepared report:
+2. In File Explorer, open:
 
    ```plaintext
-   C:\lab\caldova\modules\module-01-assess\start\.github\modernize\assessment-prebuilt\reports-<timestamp>\index.html
+   C:\lab\caldova\modules\module-01-assess\start\.github\modernize\assessment-prebuilt
    ```
 
-   Open the actual `reports-...` folder; do not type `<timestamp>` literally. If Windows asks which app to use for `index.html`, select **Microsoft Edge > Just once**.
+   Open the actual `reports-...` folder, then `index.html`. If Windows asks which app to use, select **Microsoft Edge > Just once**. A notation such as `reports-<timestamp>` means the real folder, not literal angle brackets.
 
-3. Review the portfolio, then open `repos\ZavaAuthGateway` inside that report folder. The supplied historical report retains the original **Zava** names; the working application is now called **CaldovaAuthGateway**. Do not rename the report files. Identify unsupported frameworks, security findings, and cloud-readiness issues.
-4. In that gateway report folder, open `facts\data-architecture.md` and `facts\configuration-inventory.md`. Find `System.Data.SqlClient`, SQL-login settings (`DB_USER`/`DB_PASSWORD`), and certificate-validation settings.
+3. Review the portfolio, then open `repos\ZavaAuthGateway` inside that report folder. The historical **Zava** names correspond to the **Caldova** applications in your working folders; do not rename the report files.
+4. Open `facts\data-architecture.md` and `facts\configuration-inventory.md` there. Find `System.Data.SqlClient`, SQL-login settings (`DB_USER`/`DB_PASSWORD`), and certificate-validation settings.
 
-These are findings about how the application uses a database, not checks against a running database. An inferred data model does not confirm that tables or seed data exist, that a connection works, or that a migration has completed.
+These are application-code findings, **not a live database assessment**. An inferred data model does not prove that tables or seed data exist, that a connection works, or that a migration completed. Use the facts and source when a topology graph omits a relationship.
 
-**Expected result:** You can explain why `CaldovaAuthGateway` is modernized first: `CaldovaLoanPortal` signs in through it. You can name the database authentication changes the plan must cover.
-
-**Checkpoint:** Provider identified and its database connection risks listed.
+**Before you continue:** Note why the gateway comes first and two database-connection risks its plan must address.
 
 ---
 
-## 2. Load the rulebook and add the PII skill
+## 2. Use the shared rulebook and add the PII skill
 
-**Goal:** Give planning and execution the same rules, plus a method for keeping personal data out of logs.
+**Step 2 of 6 - About 4 minutes**
 
-### Do this
+A **rulebook** tells the agent **what** standards to meet. A **skill** describes **how** to perform a task. The PII-masking skill keeps personally identifiable information, such as customer names and account numbers, out of logs.
 
-1. Open `C:\lab\caldova\modules\module-02-plan\start`. Skim `rulebook\policies.md` and `rulebook\targets.md`. The policy requires managed identity, certificate validation, no personal data in logs, supported dependencies, health checks, and Azure Container Apps readiness.
-2. Open `.github\modernize\config.json` and check that `feature_flags.rulebook` is `true` and `portfolio_url` points to the repository supplied for the lab's rulebook setup. Do not invent a URL or create a repository unless the facilitator provides that setup procedure.
-3. Copy the PII masking skill into the gateway:
+All learners use the same [Caldova workshop rulebook](https://github.com/ayangupt/ignite26-caldova-rulebook). **Do not create a personal rulebook repository.** Its charter, policies and targets are teaching examples, not Microsoft production policy.
+
+1. Open the planning workspace:
 
    ```powershell
    cd C:\lab\caldova\modules\module-02-plan\start
+   code .
+   Get-Content .github\modernize\config.json
+   ```
+
+2. Skim the local reading copies in `rulebook`: `charter.md`, `policies.md` and `targets.md`. In the configuration, confirm the entries below. This JSON is for comparison, **not a PowerShell command**:
+
+   ```json
+   {
+     "feature_flags": { "rulebook": true },
+     "portfolio_url": "https://github.com/ayangupt/ignite26-caldova-rulebook"
+   }
+   ```
+
+   The config must be in the **working directory where Modernize starts**. These exercises run it from the module root. A VS Code/app-root launch needs its own supplied configuration. A local `rulebook` folder alone does not demonstrate native loading.
+
+3. If the gateway already has **.github > skills > pii-masking**, inspect its `SKILL.md` instead of making a nested copy. Otherwise, copy the PII skill once from the planning module root:
+
+   ```powershell
    New-Item -ItemType Directory -Force -Path apps\CaldovaAuthGateway\.github\skills | Out-Null
    Copy-Item skills\pii-masking apps\CaldovaAuthGateway\.github\skills\ -Recurse
    ```
 
-**Expected result:** `apps\CaldovaAuthGateway\.github\skills\pii-masking` exists.
-
-The bank policy and rulebook are workshop examples, not approved organizational policy.
-
-**If blocked:** If the configuration is missing, the rulebook feature is disabled, or repository access is unavailable, tell the facilitator. Skip live planning and execution; start with item 4 of step 3 to review the prepared plan, then continue to the code review in step 5. Run step 6 only if the .NET SDK and package access are available. Record skipped runs and central-rulebook loading as **not verified**; reading local policies is not proof that the CLI loaded them.
+**Before you continue:** You can distinguish the shared rules from the PII skill, and the config points to the shared repository. If config/access is missing, ask the facilitator and use the prepared-plan review in step 3, item 4; record live planning/execution as **not run**. Do not substitute a local folder or invent a URL.
 
 ---
 
 ## 3. Start the plan, then review the prepared plan
 
-**Goal:** Start a live plan, and while it runs, check the prepared plan against the rulebook.
+**Step 3 of 6 - About 8 minutes**
 
-### Do this
+Start a live gateway plan, then use the prepared plan while it runs.
 
-1. Copy the goal:
+1. In PowerShell, copy the supplied goal and open the CLI:
 
    ```powershell
    cd C:\lab\caldova\modules\module-02-plan\start
    Get-Content goals\dotnet.txt -Raw | Set-Clipboard
+   modernize --model auto
    ```
 
-2. Run `modernize`. Select **Plan > Create modernization plan > Keep the plan local**. Select `CaldovaAuthGateway`, name the plan `caldova-dotnet-modernization`, and paste the goal. Answer clarifying questions using the rulebook.
-3. Look for **`Rulebook loaded (3 files)`**. Leave the run open and continue.
-4. Leave any live planning run open. In another PowerShell terminal, select the prepared branch before opening the plan in VS Code:
+2. Select **Plan > Create modernization plan > Keep the plan local**. When asked for the repository, select **CaldovaAuthGateway**; if a path is requested, use:
+
+   ```plaintext
+   C:\lab\caldova\modules\module-02-plan\start\apps\CaldovaAuthGateway
+   ```
+
+   Replace the default plan name with **`caldova-dotnet-modernization`**. At the goal prompt, press **Ctrl+V** to paste the goal. Answer clarifying questions using the shared rules; do not accept provisioning or deployment.
+
+3. Look for **`Rulebook loaded (3 files)`**, then leave the run open. When a live plan finishes, its folder should also contain `rulebook-compliance.md` and `.metadata\rulebook-metadata.json`; check the metadata's source URL. The loading message is evidence that the CLI read the rules, not that the resulting code complies.
+
+![CLI reports SUCCESS: Rulebook loaded (3 files)](../img/modernization/caldova-rulebook-loaded.png)
+
+*Loading evidence from a PREL38 rehearsal of the same CLI flow. This is not a result from your live run or proof that any modernization task passed.*
+
+4. In **another PowerShell terminal**, select the prepared branch before opening the example:
 
    ```powershell
    cd C:\lab\caldova\modules\module-03-execute\start
@@ -116,65 +144,58 @@ The bank policy and rulebook are workshop examples, not approved organizational 
    code apps\CaldovaAuthGateway
    ```
 
-   The prepared plan is on `modernization/dotnet`, not `main`. In Explorer, open `.github > modernize > caldova-dotnet-modernization > plan.md` and use **Open Preview**. Also open `.metadata\tasks.json` and `rulebook-compliance.md`.
+   In Explorer, open `.github > modernize > caldova-dotnet-modernization > plan.md` and use **Open Preview**. Open `.metadata\tasks.json` and any supplied `rulebook-compliance.md` alongside it. The prepared plan is on `modernization/dotnet`, not `main`; its reports describe a rehearsal, not today's execution. If a report is missing, record that gap rather than create substitute evidence.
 
-5. Match each requirement to a task. Treat the compliance report as a lead, not proof.
+![Prepared gateway plan in VS Code with Explorer and Markdown preview](../img/modernization/caldova-prepared-plan.png)
 
-   - **Supported runtime:** .NET 10, SDK-style project.
-   - **Passwordless database access:** Managed identity; stored SQL credentials removed.
-   - **Validated TLS:** `Encrypt=True` and `TrustServerCertificate=False`.
-   - **No personal data in logs:** Structured logging with the `pii-masking` skill.
-   - **Supported libraries:** `System.Data.SqlClient` replaced; vulnerabilities scanned.
-   - **Preserved behavior:** Public routes and the `/WhoAmI.ashx` sign-in contract.
-   - **Deployable result:** Health endpoint, environment-based settings, compliant Dockerfile.
+*Prepared-plan example, not your live plan.*
 
-**Expected result:** Every requirement maps to a task, and `pii-masking` appears on the logging task. Your live plan, if it finishes, should show the same coverage; wording and task counts can differ.
+5. Match the rules to tasks: .NET 10; managed-identity database access; validated TLS; no PII in logs; supported libraries; compatible public routes and `/WhoAmI.ashx`; health checks and a compliant Dockerfile.
 
-**If blocked:** If the live plan stalls, keep reviewing the prepared plan and record the run as pending. If the rulebook load message is missing, tell the facilitator and do not start execution on the assumption that the policies were applied.
-
-**Checkpoint:** Prepared plan reviewed against the rulebook.
+**Before you continue:** You can explain how the plan covers the rules and where the PII skill is used. If the live plan is slow, record **pending** and continue. If native loading fails, stop that run, tell the facilitator and review the prepared results instead.
 
 ---
 
 ## 4. Start the prepared execution
 
-**Goal:** Start agent work on a prepared branch, then review a finished result while it runs.
+**Step 4 of 6 - About 3 minutes**
 
-The `modernization/dotnet` branch is already prepared with the PII skill and the reviewed plan.
+Run the remaining gateway tasks from the separate execution workspace, not from your still-running plan.
 
-### Do this
-
-1. Close the live planning run if it is still going. In PowerShell:
+1. If your live planning run is still active, stop it with **Ctrl+C** in its own terminal. In the execution terminal:
 
    ```powershell
    cd C:\lab\caldova\modules\module-03-execute\start
    git switch modernization/dotnet
    git --no-pager log --oneline
+   Get-Content .github\modernize\config.json
    ```
 
-2. In `tasks.json`, confirm the first two tasks (runtime upgrade and Web Forms conversion) show `"status": "success"`.
-3. Check `.github\modernize\config.json` in this execution module's working directory as in step 2. Do not assume the planning module's configuration applies here. If the rulebook setup is unavailable, skip this live run and continue to step 5. Otherwise, start the remaining tasks from PowerShell:
+2. Confirm this working directory has the same shared-rulebook settings from step 2. In the gateway plan's `.metadata\tasks.json`, the runtime-upgrade and Web Forms-conversion tasks should already show `"status": "success"`. They are **prepared starting state**, not work you just performed.
+
+![Prepared tasks.json with the first two tasks marked success](../img/modernization/caldova-task-states.png)
+
+*Prepared task states from a rehearsal.*
+
+3. Use the CLI route below for this shortened lab; do not start a second IDE execution:
 
    ```powershell
-   modernize plan execute "Execute all remaining tasks, starting with the first unfinished task. Do not stop after one task. Do not run the deployment task." `
+   modernize plan execute "Execute all remaining tasks, starting with the first unfinished task. Do not stop after one task. Do not run the deployment task, provision resources, grant access, push changes or install tools." `
      --plan-name caldova-dotnet-modernization `
-     --source apps\CaldovaAuthGateway `
+     --source "$PWD\apps\CaldovaAuthGateway" `
+     --model auto `
      --no-tty
    ```
 
-4. Confirm **`Rulebook loaded (3 files)`** appears. Leave the terminal open and continue. **Do not wait for the run to finish.**
-
-**Expected result:** The agent works on the database, logging/PII, and validation tasks.
-
-**If blocked:** If the task state is not as expected, ask the facilitator. Do not start a second execution while the first is active.
+**Before you continue:** Check for **`Rulebook loaded (3 files)`** in this execution too. If it is absent, stop and ask the facilitator; do not assume the planning workspace's settings carried over. Otherwise leave the terminal running and move on **without waiting**. If task states or tools differ, use the prepared review and mark execution **not run**.
 
 ---
 
 ## 5. Review a finished application
 
-**Goal:** Tell the difference between a successful transformation and one that actually follows the rules.
+**Step 5 of 6 - About 10 minutes**
 
-### Do this
+Inspect the prepared result for faults that a successful build or agent response would miss.
 
 1. Leave any live execution running and open another PowerShell terminal:
 
@@ -184,30 +205,27 @@ The `modernization/dotnet` branch is already prepared with the PII skill and the
    git --no-pager diff --stat main -- apps/CaldovaLoanPortal
    ```
 
-2. Find the ASP.NET Core replacement for the old Web Forms code. Inspect the database configuration and public routes.
-3. Find at least two gaps against the rulebook:
-   - Look for the legacy `FROM mono:6.12` base image in the Dockerfile.
-   - Check how the portal recognizes a user signed in through the gateway's `/WhoAmI.ashx`.
-
-4. Spend about four minutes on the separately prepared final state:
+2. Find the ASP.NET Core replacement for the old Web Forms code. Compare its database settings and public routes with the rulebook.
+3. Identify two gaps: the portal's legacy `FROM mono:6.12` base image, and how it recognizes users through the gateway's `/WhoAmI.ashx` response. A green build does not prove this sign-in contract works.
+4. Spend about four minutes on the **separate** final state:
 
    ```powershell
    code C:\lab\caldova\modules\module-03-execute\final\dotnet
    ```
 
-   Confirm all three applications target .NET 10, compare the portal's Microsoft-based non-root Dockerfile with the review example, and read `VALIDATION.md`. This is prepared evidence, not the output of your live run. Do not rerun the full SQL-backed suite during this lab.
+   Confirm the three apps target .NET 10; compare the portal's Microsoft-based, non-root Dockerfile; and read `VALIDATION.md`. This frozen snapshot's evidence is not output from your current agent run. Do not rerun its full SQL-backed suite, rebuild containers or deploy during this lab.
 
-**Expected result:** You can explain the review gaps and how the validated final state addresses them. Distinguish local tests and container checks from the Azure and central-rulebook checks that remain unverified. The intentionally flawed finish example remains useful; the final state complements it rather than replacing it.
+**Before you continue:** Note the review gaps and how the final snapshot addresses them. Keep Azure access, signed-in behavior and any new-rulebook execution separate from that historical evidence. Do not overwrite `finish` with `final`.
 
 ---
 
 ## 6. Validate the provider
 
-**Goal:** Build, test, and run the prepared gateway, then apply the same checks to your own run if it finishes.
+**Step 6 of 6 - About 12 minutes**
 
-### Do this
+Build, test and run the **prepared gateway** locally. Apply the same checks to your live result only if it finishes.
 
-1. Build the prepared gateway and run its tests:
+1. Build and run the concrete test project:
 
    ```powershell
    cd C:\lab\caldova\modules\module-03-execute\finish\apps\CaldovaAuthGateway
@@ -215,16 +233,12 @@ The `modernization/dotnet` branch is already prepared with the PII skill and the
    dotnet test Tests\CaldovaAuthGateway.Tests.csproj
    ```
 
-2. Check these gates in the code:
+![Prepared gateway build and test output showing 13 tests passed](../img/modernization/caldova-build-tests.png)
 
-   | Gate | Expected evidence |
-   |---|---|
-   | Runtime and build | SDK-style .NET 10 project; build succeeds |
-   | Database code | `Microsoft.Data.SqlClient` with identity-based authentication; no stored password; validated TLS; `DB_HOST`/`DB_NAME` settings |
-   | PII | Masking helper used by structured logs; tests check raw personal data is absent |
-   | Compatibility | Public routes and response contracts preserved |
+*Rehearsal output. Record your own result, not these timings or counts.*
 
-3. Run the gateway locally without a database:
+2. Inspect the code for an SDK-style .NET 10 project; `Microsoft.Data.SqlClient` with identity-based authentication and validated TLS; structured logs using PII masking; and preserved public routes.
+3. Run without a database, using local-only placeholders:
 
    ```powershell
    $env:DB_HOST = 'localhost'
@@ -233,80 +247,76 @@ The `modernization/dotnet` branch is already prepared with the PII skill and the
    dotnet run
    ```
 
-4. In a second terminal, check the routes:
+4. In another terminal, check:
 
    ```powershell
    curl.exe -i http://localhost:8080/health
    curl.exe -i http://localhost:8080/WhoAmI.ashx
    ```
 
-   Expect HTTP 200, and `{"authenticated":false}` from `/WhoAmI.ashx`. Stop the app with **Ctrl+C**.
+   Expect HTTP 200 and `{"authenticated":false}` from `/WhoAmI.ashx`. Stop the app with **Ctrl+C** in its server terminal.
 
-5. If you started a live execution, return to it. If it finished, repeat these checks on `module-03-execute\start\apps\CaldovaAuthGateway`; if it is still running, record it as pending. If you skipped execution, record it as not started.
+![Local health and anonymous identity routes returning HTTP 200](../img/modernization/caldova-local-routes.png)
 
-**Expected result:** You have build and test evidence and a compatibility check. These local checks do not prove Azure SQL access, signed-in behavior, or telemetry delivery.
+*Rehearsal with no database and loopback telemetry settings. This does not verify Azure SQL access or telemetry delivery.*
+
+5. If your live execution finished, repeat the checks in its gateway under `module-03-execute\start`. If it is still running, record **pending**; if skipped, record **not run**. Do not launch a duplicate.
+
+**Before you continue:** Record your build/test and route results separately from prepared evidence. These routes do not test database-backed login. The VM, Azure and TAP credentials are **not application test-user credentials**. Missing DB/app-login inputs mean **not verified**, not an invitation to guess credentials or create resources.
 
 ---
 
 ## Finish
 
-### Check your outcome
+In your notes, answer:
 
-Mark only the outcomes you completed. Distinguish your own live runs from the supplied artifacts, and record each skipped or unfinished run as **not started** or **pending**. The review-only fallback does not complete the full hands-on exercise.
+- Why did the sign-in provider come before its consumer?
+- Which rules and skill guided the plan, and where did you see native loading?
+- What did you personally verify, what came from prepared examples, and what remains pending or not run?
 
-- You identified the provider and its database risks from the assessment.
-- You checked the plan against the rulebook and confirmed the PII skill is used.
-- You started a scoped execution on the prepared branch.
-- You built and tested a prepared result and recorded the gaps and unverified checks.
+If you used the review-only fallback, say so; it does not complete the live hands-on outcomes. Stop local app servers, leave unfinished agent work identified, and follow the facilitator's handoff. Do not reset the shared lab.
 
-If your agent is still running, note its pending tasks. Do not start duplicates or reset the lab.
+**Continue to SRE Agent** in the full lab manual, using its own workload and resources.
 
 ### If something did not work
 
 | Symptom | Next action |
 |---|---|
-| Lab folders, tool, or model missing | Ask the facilitator; do not install or switch to personal access |
-| No `Rulebook loaded (3 files)` message | Check the working directory, feature flag, and `gh auth status`; tell the facilitator |
-| Planning or execution takes too long | Use the prepared plan or result and record the live run as pending |
-| Build passes but sign-in fails | Inspect the gateway/portal authentication contract |
+| Lab folder or tool missing | Ask the facilitator; do not install or use personal access |
+| CLI rejects the model | Confirm the command includes `--model auto`; VS Code's picker is separate |
+| Rulebook not loaded | Check the actual working-directory config, shared URL and `gh auth status`; stop live work and ask the facilitator |
+| Agent takes too long | Review the prepared result and record your run as pending |
+| Git output fills the terminal | Press `q` if a pager opened; use the documented `--no-pager` commands |
+| Build passes but login fails | Inspect the gateway/portal contract and required DB/app-user setup |
 
----
+### Reference: CLI alternatives
 
-## Reference
+These are **not additional required runs**. Do not run them alongside an existing assessment or plan.
 
-These are not additional required steps.
-
-### Running a new assessment
-
-Run from `module-01-assess\start`:
+For a new assessment outside the shortened flow:
 
 ```powershell
+cd C:\lab\caldova\modules\module-01-assess\start
 modernize assess `
   --source "$PWD\.github\modernize\repos-live.json" `
   --assess-config "$PWD\.github\modernize\assess-config.yaml" `
   --output-path "$PWD\.github\modernize\assessment" `
+  --model auto `
   --no-tty
 ```
 
-### Planning from PowerShell
-
-Run from `module-02-plan\start`:
+For planning without the interactive menus:
 
 ```powershell
+cd C:\lab\caldova\modules\module-02-plan\start
 modernize plan create (Get-Content goals\dotnet.txt -Raw) `
-  --source apps\CaldovaAuthGateway `
+  --source "$PWD\apps\CaldovaAuthGateway" `
   --plan-name caldova-dotnet-modernization `
   --language dotnet `
+  --model auto `
   --no-tty
 ```
 
-### The estate
+The shared workshop rulebook baseline is **1.0**, commit `5564f81d46c25830910e44dea27a32f32720dabc`. Rulebook publication and loading do not establish application compliance.
 
-- **CaldovaAuthGateway:** Web Forms/handlers on .NET Framework 4.8; sign-in provider.
-- **CaldovaLoanPortal:** Web Forms on .NET Framework 4.8; signs in through the gateway.
-- **CaldovaRiskEngine:** WCF on .NET Framework 4.8; credit-scoring service.
-- **CaldovaLedger:** Servlets on Java 17; Java estate, not used in this lab.
-- **CaldovaPayGateway:** Struts 1.3.10 on Java 8; Java estate, not used in this lab.
-- **CaldovaFraudDetector:** Struts 2.5.30 on Java 11; Java estate, not used in this lab.
-
-The full version of this exercise, including the Java track and live assessment, is in the PREL38 pre-day lab.
+The full PREL38 pre-day lab includes the live assessment and Java alternative; neither is an extra task in this .NET-only section.

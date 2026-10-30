@@ -1,5 +1,33 @@
 # Infrastructure
 
-<!-- IGNITE TEMPLATE PLACEHOLDER: remove this folder when the session needs no infrastructure. -->
+## Modernization rulebook configuration
 
-Use this folder for deployment or runtime infrastructure, including Skillable-specific files when needed.
+This section is for the lab image preparer, not an additional participant exercise. The [participant guide](../instructions/modernize-app-code.md) uses the same public [Caldova workshop rulebook](https://github.com/ayangupt/ignite26-caldova-rulebook) as PREL38. Learners do not need to publish individual policy repositories.
+
+The finalized training baseline is **1.0**, commit `5564f81d46c25830910e44dea27a32f32720dabc`. This is workshop policy, not production-policy approval.
+
+### Prepare the launch directories
+
+Use [modernize-config.json](modernize-config.json) as the content of `.github\modernize\config.json` in each actual launch directory:
+
+- `C:\lab\caldova\modules\module-02-plan\start`
+- `C:\lab\caldova\modules\module-03-execute\start`
+
+The shortened lab starts the CLI at those module roots. If the image also supports launching Modernize from VS Code or an application directory, the gateway app root in each module needs the same config:
+
+- `C:\lab\caldova\modules\module-02-plan\start\apps\CaldovaAuthGateway`
+- `C:\lab\caldova\modules\module-03-execute\start\apps\CaldovaAuthGateway`
+
+Keep the config available after selecting the prepared `modernization/dotnet` branch. Inspect existing configuration and authored work before changing it; do not reset repositories or overwrite a learner's plan. Local `rulebook\charter.md`, `policies.md` and `targets.md` in the planning workspace should be reading copies of the shared baseline.
+
+Do not alter the deliberately flawed `finish` review example or the frozen `final\dotnet` files, rulebook copies and manifest to make historical evidence appear newly validated.
+
+### Verify the configured image
+
+PREL38 verified native loading with Modernize CLI **1.0.62** and explicit **`--model auto`**. That is source evidence for these instructions, not proof that the LAB720 image has the same tools or settings. Do not assume the CLI's default model or VS Code's picker selects Auto for a terminal command.
+
+On a fresh LAB720 launch, confirm the required tools, package access and assigned-account sign-in before testing planning and execution. Both live operations must show **`Rulebook loaded (3 files)`**. A completed plan should also contain `rulebook-compliance.md` and `.metadata\rulebook-metadata.json` identifying the shared source. Reading local policy files, a prepared compliance report or a passing build is not sufficient evidence of a current native load.
+
+Keep shared-image promotion coordinated with the other module owners. Merging this configuration file or the documentation PR does not install dependencies, copy files into Skillable, capture a VM or complete a fresh-learner rehearsal.
+
+The local gateway validation does not require provisioning Azure SQL or changing the SRE resources. Any separate live DB-assessment exercise still needs its agreed database/context and CLI capability; an inferred data model is not a live database check.

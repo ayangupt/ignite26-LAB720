@@ -37,6 +37,8 @@ Fill in the sections below yourself, then:
 
 This 75-minute hands-on lab combines application modernization and operations automation using two separate training workloads in your assigned lab environment. For Caldova Bank, review a prepared assessment, start a rulebook-guided modernization plan and execution with GitHub Copilot, and check prepared .NET results for database-access changes, personal-data masking, and compatibility. For Caldova Retail Co., use Azure SRE Agent to investigate a product-search failure, verify recovery, schedule cost reviews, and create live traffic-and-health reports.
 
+The modernization section uses the shared [Caldova workshop rulebook](https://github.com/ayangupt/ignite26-caldova-rulebook). All learners use the same training baseline; creating an individual rulebook repository is not a prerequisite.
+
 ### 🚀 Getting started
 
 The exercises require an assigned, prepared lab environment and lab accounts. Cloning this repository does not set up the lab. If the assigned environment, exercise files, or tools are unavailable, ask the facilitator or lab provider rather than installing software, creating replacement resources, or using personal accounts.
