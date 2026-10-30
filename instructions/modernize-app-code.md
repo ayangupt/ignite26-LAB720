@@ -134,7 +134,7 @@ Start a live gateway plan, then use the prepared plan while it runs.
 
 ![CLI reports SUCCESS: Rulebook loaded (3 files)](../img/modernization/caldova-rulebook-loaded.png)
 
-*Loading evidence from a PREL38 rehearsal of the same CLI flow. This is not a result from your live run or proof that any modernization task passed.*
+*Expected CLI message: `SUCCESS: Rulebook loaded (3 files)`.*
 
 4. In **another PowerShell terminal**, select the prepared branch before opening the example:
 
@@ -146,9 +146,9 @@ Start a live gateway plan, then use the prepared plan while it runs.
 
    In Explorer, open `.github > modernize > caldova-dotnet-modernization > plan.md` and use **Open Preview**. Open `.metadata\tasks.json` and any supplied `rulebook-compliance.md` alongside it. The prepared plan is on `modernization/dotnet`, not `main`; its reports describe a rehearsal, not today's execution. If a report is missing, record that gap rather than create substitute evidence.
 
-![Prepared gateway plan in VS Code with Explorer and Markdown preview](../img/modernization/caldova-prepared-plan.png)
+![Gateway plan preview showing the .NET 10 target and proposed changes](../img/modernization/caldova-prepared-plan.png)
 
-*Prepared-plan example, not your live plan.*
+*Plan preview: .NET 10 target, preserved routes, and managed-identity database access.*
 
 5. Match the rules to tasks: .NET 10; managed-identity database access; validated TLS; no PII in logs; supported libraries; compatible public routes and `/WhoAmI.ashx`; health checks and a compliant Dockerfile.
 
@@ -173,9 +173,9 @@ Run the remaining gateway tasks from the separate execution workspace, not from 
 
 2. Confirm this working directory has the same shared-rulebook settings from step 2. In the gateway plan's `.metadata\tasks.json`, the runtime-upgrade and Web Forms-conversion tasks should already show `"status": "success"`. They are **prepared starting state**, not work you just performed.
 
-![Prepared tasks.json with the first two tasks marked success](../img/modernization/caldova-task-states.png)
+![Task metadata showing success for the runtime upgrade and Web Forms conversion](../img/modernization/caldova-task-states.png)
 
-*Prepared task states from a rehearsal.*
+*Starting task status: `success` for the runtime upgrade and Web Forms conversion.*
 
 3. Use the CLI route below for this shortened lab; do not start a second IDE execution:
 
@@ -233,9 +233,9 @@ Build, test and run the **prepared gateway** locally. Apply the same checks to y
    dotnet test Tests\CaldovaAuthGateway.Tests.csproj
    ```
 
-![Prepared gateway build and test output showing 13 tests passed](../img/modernization/caldova-build-tests.png)
+![Gateway build succeeded and test summary shows 13 passed, 0 failed](../img/modernization/caldova-build-tests.png)
 
-*Rehearsal output. Record your own result, not these timings or counts.*
+*Passing build and tests: `Build succeeded` and `failed: 0` in the test summary.*
 
 2. Inspect the code for an SDK-style .NET 10 project; `Microsoft.Data.SqlClient` with identity-based authentication and validated TLS; structured logs using PII masking; and preserved public routes.
 3. Run without a database, using local-only placeholders:
@@ -258,11 +258,11 @@ Build, test and run the **prepared gateway** locally. Apply the same checks to y
 
 ![Local health and anonymous identity routes returning HTTP 200](../img/modernization/caldova-local-routes.png)
 
-*Rehearsal with no database and loopback telemetry settings. This does not verify Azure SQL access or telemetry delivery.*
+*Expected local responses: HTTP 200 from both routes; `/WhoAmI.ashx` returns `{"authenticated":false}`.*
 
 5. If your live execution finished, repeat the checks in its gateway under `module-03-execute\start`. If it is still running, record **pending**; if skipped, record **not run**. Do not launch a duplicate.
 
-**Before you continue:** Record your build/test and route results separately from prepared evidence. These routes do not test database-backed login. The VM, Azure and TAP credentials are **not application test-user credentials**. Missing DB/app-login inputs mean **not verified**, not an invitation to guess credentials or create resources.
+**Before you continue:** Record your build/test and route results separately from prepared evidence. These routes do not test database-backed login or Azure telemetry delivery. The VM, Azure and TAP credentials are **not application test-user credentials**. Missing DB/app-login inputs mean **not verified**, not an invitation to guess credentials or create resources.
 
 ---
 
