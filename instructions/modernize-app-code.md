@@ -146,9 +146,9 @@ Start a live gateway plan, then use the prepared plan while it runs.
 
    In Explorer, open `.github > modernize > caldova-dotnet-modernization > plan.md` and use **Open Preview**. Open `.metadata\tasks.json` and any supplied `rulebook-compliance.md` alongside it. The prepared plan is on `modernization/dotnet`, not `main`; its reports describe a rehearsal, not today's execution. If a report is missing, record that gap rather than create substitute evidence.
 
-![Gateway plan preview showing the .NET 10 target and proposed changes](../img/modernization/caldova-prepared-plan.png)
+![1: Open plan.md and its compliance report. 2: Find the .NET 10 target. 3: Check managed-identity database access.](../img/guide-annotations/annotated/caldova-plan-review-annotated-bca49df6c11b.png)
 
-*Plan preview: .NET 10 target, preserved routes, and managed-identity database access.*
+*1. Open the plan and compliance report. 2. Find the .NET 10 target. 3. Check the managed-identity requirement.*
 
 5. Match the rules to tasks: .NET 10; managed-identity database access; validated TLS; no PII in logs; supported libraries; compatible public routes and `/WhoAmI.ashx`; health checks and a compliant Dockerfile.
 
@@ -173,9 +173,9 @@ Run the remaining gateway tasks from the separate execution workspace, not from 
 
 2. Confirm this working directory has the same shared-rulebook settings from step 2. In the gateway plan's `.metadata\tasks.json`, the runtime-upgrade and Web Forms-conversion tasks should already show `"status": "success"`. They are **prepared starting state**, not work you just performed.
 
-![Task metadata showing success for the runtime upgrade and Web Forms conversion](../img/modernization/caldova-task-states.png)
+![1: Locate .metadata/tasks.json. 2: Task 001 runtime upgrade has status success. 3: Task 002 Web Forms conversion has status success.](../img/guide-annotations/annotated/caldova-task-states-annotated-918df22654f4.png)
 
-*Starting task status: `success` for the runtime upgrade and Web Forms conversion.*
+*1. Locate `tasks.json`. 2-3. Confirm `success` for the runtime upgrade and Web Forms conversion.*
 
 3. Use the CLI route below for this shortened lab; do not start a second IDE execution:
 
@@ -233,9 +233,9 @@ Build, test and run the **prepared gateway** locally. Apply the same checks to y
    dotnet test Tests\CaldovaAuthGateway.Tests.csproj
    ```
 
-![Gateway build succeeded and test summary shows 13 passed, 0 failed](../img/modernization/caldova-build-tests.png)
+![1: Build succeeded. 2: The test summary shows zero failed tests and 13 succeeded.](../img/guide-annotations/annotated/caldova-build-tests-annotated-1225a17c2c50.png)
 
-*Passing build and tests: `Build succeeded` and `failed: 0` in the test summary.*
+*1. Look for `Build succeeded`. 2. Check `failed: 0` in the test summary.*
 
 2. Inspect the code for an SDK-style .NET 10 project; `Microsoft.Data.SqlClient` with identity-based authentication and validated TLS; structured logs using PII masking; and preserved public routes.
 3. Run without a database, using local-only placeholders:
@@ -256,9 +256,9 @@ Build, test and run the **prepared gateway** locally. Apply the same checks to y
 
    Expect HTTP 200 and `{"authenticated":false}` from `/WhoAmI.ashx`. Stop the app with **Ctrl+C** in its server terminal.
 
-![Local health and anonymous identity routes returning HTTP 200](../img/modernization/caldova-local-routes.png)
+![1: The health response is OK with HTTP 200. 2: WhoAmI returns authenticated false with HTTP 200.](../img/guide-annotations/annotated/caldova-local-routes-annotated-bf363029221e.png)
 
-*Expected local responses: HTTP 200 from both routes; `/WhoAmI.ashx` returns `{"authenticated":false}`.*
+*1. `/health`: HTTP 200 and `OK`. 2. `/WhoAmI.ashx`: HTTP 200 and `{"authenticated":false}`.*
 
 5. If your live execution finished, repeat the checks in its gateway under `module-03-execute\start`. If it is still running, record **pending**; if skipped, record **not run**. Do not launch a duplicate.
 
