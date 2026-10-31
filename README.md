@@ -35,7 +35,7 @@ Fill in the sections below yourself, then:
 ## 🔥LAB720: Hands-on: Modernize apps and databases and automate operations
 ### Session description
 
-Add your session description here. Keep it concise — 2-3 sentences about what attendees will learn and why it matters.
+Get hands-on using AI to modernize applications, databases, and operations. Use GitHub Copilot to assess and upgrade a Java or .NET app, remediate dependencies, containerize workloads, and modernize the database. Then use Azure SRE Agent to investigate incidents, identify root causes, and automate remediation. Leave with practical experience applying AI agents across the modernization and operations lifecycle.
 
 ### 🚀 Getting started
 
