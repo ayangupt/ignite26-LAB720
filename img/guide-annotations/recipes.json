@@ -1,0 +1,345 @@
+{
+  "baselineManualSha256": "57ca3007e1678f0eaf3f1feb68a48ab717dae27ede4ce78b747c05024f806a56",
+  "images": [
+    {
+      "name": "GitHub sign-in",
+      "source": "originals/6wflfew4.png",
+      "sourceSha256": "d5f5573f6345d8b2ec47518520c57aa842499c776db2085e5723f968e08f7795",
+      "originalNativeReference": "instructions362436/6wflfew4.png",
+      "decision": "unchanged",
+      "reason": "Already a compact 364px dialog with a strong existing outline around Continue with GitHub. Another callout would duplicate it."
+    },
+    {
+      "name": "Rulebook message",
+      "source": "../modernization/caldova-rulebook-loaded.png",
+      "sourceSha256": "1da63b6aa8e476879f705d6baacb80d3ef24603fb12dd36f89bd3031200314b6",
+      "originalNativeReference": "instructions362436/caldova-rulebook-loaded.png",
+      "decision": "unchanged",
+      "reason": "Already a tight four-line CLI crop with one explicit loading message; the adjacent caption names that exact line."
+    },
+    {
+      "name": "Plan review",
+      "slug": "caldova-plan-review",
+      "source": "../modernization/caldova-prepared-plan.png",
+      "sourceSha256": "7388fc30dbdae6e8d74b6a07c1bf3a8f1adede65cf4597ec96a1e090e407d437",
+      "originalNativeReference": "instructions362436/caldova-prepared-plan.png",
+      "decision": "annotated",
+      "reason": "The full VS Code window makes the path and plan requirements too small. Separate source crops focus on the file, target and identity requirement.",
+      "alt": "1: Open plan.md and its compliance report. 2: Find the .NET 10 target. 3: Check managed-identity database access.",
+      "caption": "*1. Open the plan and compliance report. 2. Find the .NET 10 target. 3. Check the managed-identity requirement.*",
+      "panels": [
+        {"label": "Open the plan and compliance report", "crop": [110, 190, 600, 592], "boxes": [[169, 500, 582, 586]]},
+        {"label": "Find the .NET 10 target", "crop": [782, 1188, 1337, 1232]},
+        {"label": "Check managed-identity database access", "crop": [1297, 1323, 1753, 1366]}
+      ]
+    },
+    {
+      "name": "Starting task states",
+      "slug": "caldova-task-states",
+      "source": "../modernization/caldova-task-states.png",
+      "sourceSha256": "ed846ef27aa40156c0770d96d270cc18351500050f0a1827ae2c19f81925da02",
+      "originalNativeReference": "instructions362436/caldova-task-states.png",
+      "decision": "annotated",
+      "reason": "Use three clearly separated close-ups so the task metadata location and both actual id/status pairs remain legible at 450px.",
+      "alt": "1: Locate .metadata/tasks.json. 2: Task 001 runtime upgrade has status success. 3: Task 002 Web Forms conversion has status success.",
+      "caption": "*1. Locate `tasks.json`. 2-3. Confirm `success` for the runtime upgrade and Web Forms conversion.*",
+      "panels": [
+        {"label": "Locate .metadata/tasks.json", "crop": [110, 190, 600, 463], "boxes": [[191, 414, 438, 455]]},
+        {"label": "Task 001: .NET 10 runtime upgrade", "layout": "vertical", "crops": [[818, 405, 1590, 448], [818, 441, 1166, 486]], "boxes": [[824, 443, 1158, 483]]},
+        {"label": "Task 002: Web Forms conversion", "layout": "vertical", "crops": [[818, 1051, 1740, 1094], [818, 1088, 1166, 1132]], "boxes": [[824, 1089, 1158, 1129]]}
+      ]
+    },
+    {
+      "name": "Build and tests",
+      "slug": "caldova-build-tests",
+      "source": "../modernization/caldova-build-tests.png",
+      "sourceSha256": "35ede55d6a9b4009bca9a2579ba5733c8d5b2714bfd059df4152d4840f7e37a4",
+      "originalNativeReference": "instructions362436/caldova-build-tests.png",
+      "decision": "annotated",
+      "reason": "Remove empty terminal area and enlarge the actual build result and test-summary counters rather than inventing output.",
+      "alt": "1: Build succeeded. 2: The test summary shows zero failed tests and 13 succeeded.",
+      "caption": "*1. Look for `Build succeeded`. 2. Check `failed: 0` in the test summary.*",
+      "panels": [
+        {"label": "Look for Build succeeded", "crop": [8, 221, 650, 267]},
+        {"label": "Check the test summary for failures", "crop": [450, 642, 918, 690]}
+      ]
+    },
+    {
+      "name": "Local route responses",
+      "slug": "caldova-local-routes",
+      "source": "../modernization/caldova-local-routes.png",
+      "sourceSha256": "039df03b8f544353d6c037b167475a11ada76fd970889996172392f496dd647e",
+      "originalNativeReference": "instructions362436/caldova-local-routes.png",
+      "decision": "annotated",
+      "reason": "The result summaries already contain the relevant values; enlarge those original pixels instead of shrinking the whole terminal.",
+      "alt": "1: The health response is OK with HTTP 200. 2: WhoAmI returns authenticated false with HTTP 200.",
+      "caption": "*1. `/health`: HTTP 200 and `OK`. 2. `/WhoAmI.ashx`: HTTP 200 and `{\"authenticated\":false}`.*",
+      "panels": [
+        {"label": "/health: OK and HTTP 200", "crop": [8, 70, 260, 151]},
+        {"label": "/WhoAmI.ashx: authenticated is false", "crop": [8, 150, 490, 233]}
+      ]
+    },
+    {
+      "name": "Import destination",
+      "slug": "caldova-import-destination",
+      "source": "originals/reviewed-destination-a53c82bb8f6a.png",
+      "sourceSha256": "a53c82bb8f6ac06bbfb543fa3ee9ba0fc84ffd2cbb574fc6cf48aa3f862d543e",
+      "originalNativeReference": "instructions362436/reviewed-destination-a53c82bb8f6a.png",
+      "decision": "annotated",
+      "reason": "Separate account/name, Private visibility and Begin import into the three actions; retain the account redaction.",
+      "alt": "1: Choose the lab owner and repository name. 2: Keep Private selected. 3: Begin import.",
+      "panels": [
+        {"label": "Choose your lab owner and repository name", "crop": [8, 90, 950, 245]},
+        {"label": "Keep Private selected", "crop": [8, 287, 780, 367]},
+        {"label": "Begin the import", "crop": [965, 485, 1289, 568], "boxes": [[1081, 497, 1282, 562]]}
+      ]
+    },
+    {
+      "name": "Import in progress",
+      "source": "originals/reviewed-progress-dfbc8bcafce4.png",
+      "sourceSha256": "dfbc8bcafce4970edf00011ee92ebfd35125cd4788fa149c575286801ebe4302",
+      "originalNativeReference": "instructions362436/reviewed-progress-dfbc8bcafce4.png",
+      "decision": "unchanged",
+      "reason": "A single progress state is already isolated and outlined. Extra marks would add noise or risk implying the import completed."
+    },
+    {
+      "name": "Assigned agent",
+      "slug": "caldova-assigned-agent",
+      "source": "originals/reviewed-agent-list-b627a44cd585.png",
+      "sourceSha256": "b627a44cd5851b2132fc19ab3c8b587dbdd977206564480584a4da84fb0f0ca1",
+      "originalNativeReference": "instructions362436/reviewed-agent-list-b627a44cd585.png",
+      "decision": "annotated",
+      "reason": "Focus on the existing agent-name link rather than the unrelated Create agent control. No redacted content is reconstructed.",
+      "alt": "Open the assigned Caldova agent from the Name column.",
+      "panels": [
+        {"label": "Open your assigned agent name", "crop": [65, 389, 490, 538], "boxes": [[175, 450, 445, 517]]}
+      ]
+    },
+    {
+      "name": "Context wizard",
+      "slug": "caldova-context-wizard",
+      "source": "originals/reviewed-context-wizard-b929c8710b68.png",
+      "sourceSha256": "b929c8710b689a521be4607ffe2bd2db3961ec490552f94c324ffafff612fff4",
+      "originalNativeReference": "instructions362436/reviewed-context-wizard-b929c8710b68.png",
+      "decision": "annotated",
+      "reason": "The decorative header dominates the original; emphasize Quickstart, the Code add control and the connected Logs indicator.",
+      "alt": "1: Keep Quickstart selected. 2: Locate the Code add control. 3: Review the Logs card.",
+      "panels": [
+        {"label": "Keep Quickstart selected", "crop": [430, 355, 808, 432], "boxes": [[451, 362, 637, 427]]},
+        {"label": "Locate the Code add control", "crops": [[135, 641, 605, 685], [1136, 657, 1224, 745]], "boxes": [[1143, 666, 1209, 732]]},
+        {"label": "Review the connected Logs card", "crops": [[135, 828, 398, 925], [1104, 852, 1222, 934]], "boxes": [[1154, 860, 1212, 923]]}
+      ]
+    },
+    {
+      "name": "Resource group scope",
+      "slug": "caldova-resource-scope",
+      "source": "originals/reviewed-azure-resource-scope-8d29d9649d51.png",
+      "sourceSha256": "8d29d9649d510706c2e8c7b58449d352c33c43d660bc193827e6e368d7fd2b63",
+      "originalNativeReference": "instructions362436/reviewed-azure-resource-scope-8d29d9649d51.png",
+      "decision": "annotated",
+      "reason": "The next action concerns the resource-group boundary, not the empty higher-level scope cards.",
+      "alt": "Review Resource group scope and leave the assigned ResourceGroup1 entry unchanged.",
+      "panels": [
+        {"label": "Review Resource group scope; leave it unchanged", "crop": [22, 502, 480, 700], "boxes": [[116, 624, 407, 678]]}
+      ]
+    },
+    {
+      "name": "Connected log providers",
+      "slug": "caldova-connected-logs",
+      "source": "originals/reviewed-logs-connected-2409f8ad4d1f.png",
+      "sourceSha256": "2409f8ad4d1f68ac265f047f2203bccff1fe41221fa72ebf3989479443b000b4",
+      "originalNativeReference": "instructions362436/reviewed-logs-connected-2409f8ad4d1f.png",
+      "decision": "annotated",
+      "reason": "Enlarge the Service and Status columns together so both providers stay associated with their actual Connected values.",
+      "alt": "Confirm Application Insights and Log Analytics both show Connected.",
+      "panels": [
+        {"label": "Confirm both log providers are Connected", "crop": [492, 235, 1100, 447], "boxes": [[878, 300, 1065, 351], [878, 381, 1065, 432]]}
+      ]
+    },
+    {
+      "name": "Repository connection",
+      "slug": "caldova-repository-connection",
+      "source": "originals/reviewed-repository-connection-8c170c30e987.png",
+      "sourceSha256": "8c170c30e987c4d3de7021ffd25f1f2c96f9864f1b382967c6ab3a8217298bd3",
+      "originalNativeReference": "instructions362436/reviewed-repository-connection-8c170c30e987.png",
+      "decision": "annotated",
+      "reason": "Remove unrelated empty wizard space and focus on selecting GitHub and entering the imported copy URL. The empty field remains empty.",
+      "alt": "1: Select GitHub. 2: Enter the imported lab repository URL.",
+      "panels": [
+        {"label": "Select GitHub", "crop": [602, 251, 951, 365], "boxes": [[608, 258, 937, 357]]},
+        {"label": "Enter your imported repository URL", "crop": [600, 393, 1633, 580], "boxes": [[607, 439, 1629, 520]]}
+      ]
+    },
+    {
+      "name": "GitHub OAuth",
+      "source": "originals/reviewed-github-oauth-8c442671e508.png",
+      "sourceSha256": "8c442671e5080b213eda5b52f7092ef1888e1d86a45db24fb2515fe0854b5c51",
+      "originalNativeReference": "instructions362436/reviewed-github-oauth-8c442671e508.png",
+      "decision": "unchanged",
+      "reason": "The compact crop already isolates selected OAuth and the blue Sign in to GitHub button; extra annotations would repeat two obvious controls."
+    },
+    {
+      "name": "Saved repository",
+      "slug": "caldova-saved-repository",
+      "source": "originals/reviewed-repository-saved-56e7fa99a8cb.png",
+      "sourceSha256": "56e7fa99a8cb130c96f736d2f583f79da63627cd509d72a86b367ad0837f724f",
+      "originalNativeReference": "instructions362436/reviewed-repository-saved-56e7fa99a8cb.png",
+      "decision": "annotated",
+      "reason": "Enlarge the repository count and display-name entry without exposing or replacing the masked URL or claiming a new status.",
+      "alt": "Confirm the Code card lists one repository and the imported repository name.",
+      "panels": [
+        {"label": "Confirm your imported repository is listed", "crop": [25, 22, 501, 406], "boxes": [[169, 337, 457, 379]]}
+      ]
+    },
+    {
+      "name": "Getting started thread",
+      "slug": "caldova-getting-started",
+      "source": "originals/reviewed-thread-overview-30ce58f220a8.png",
+      "sourceSha256": "30ce58f220a88689385704ea9f3d022cbe81c9eaf3473661b2e66813e98d7d18",
+      "originalNativeReference": "instructions362436/reviewed-thread-overview-30ce58f220a8.png",
+      "decision": "annotated",
+      "reason": "Remove the empty sidebar and enlarge saved context plus the place to ask the next question. The original masked identity is not recreated.",
+      "alt": "1: Review the saved context files. 2: Ask a follow-up in the chat box.",
+      "panels": [
+        {"label": "Review the saved context files", "crop": [621, 112, 1135, 312]},
+        {"label": "Ask a follow-up in the chat box", "crops": [[646, 730, 1110, 824], [2048, 778, 2118, 840]]}
+      ]
+    },
+    {
+      "name": "App Service hostname",
+      "slug": "caldova-app-hostname",
+      "source": "originals/reviewed-default-hostname-0540d408303f.png",
+      "sourceSha256": "0540d408303ffa8be5859cd8f926d7b60335da317eb338617091f0f958a9b566",
+      "originalNativeReference": "instructions362436/reviewed-default-hostname-0540d408303f.png",
+      "decision": "annotated",
+      "reason": "Isolate the Default Hostname label and its actual value; do not turn the example hostname into a new lab URL.",
+      "alt": "1: Find Default Hostname. 2: Read the hostname from your app's response.",
+      "panels": [
+        {"label": "Find the Default Hostname row", "crop": [230, 355, 510, 425]},
+        {"label": "Use the hostname from your own response", "crop": [625, 373, 1206, 419]}
+      ]
+    },
+    {
+      "name": "Search failure",
+      "slug": "caldova-search-failure",
+      "source": "originals/reviewed-search-failure-6627c3573aff.png",
+      "sourceSha256": "6627c3573aff3ff2da3822c2b63e6344bb70d4353e316ed82ef64b02e77c358d",
+      "originalNativeReference": "instructions362436/reviewed-search-failure-6627c3573aff.png",
+      "decision": "annotated",
+      "reason": "Remove wide blank space and connect the jacket search to the actual HTTP500 failure. Keep the red failure state unchanged.",
+      "alt": "1: Search for jacket. 2: Observe 500 - Search failed and HTTP 500.",
+      "panels": [
+        {"label": "Search for jacket", "crop": [24, 67, 530, 228], "boxes": [[32, 159, 484, 222]]},
+        {"label": "Observe the HTTP 500 failure", "crop": [48, 320, 535, 474]}
+      ]
+    },
+    {
+      "name": "Scheduled task run",
+      "slug": "caldova-scheduled-task-run",
+      "source": "originals/reviewed-scheduled-task-run-c2fae5094228.png",
+      "sourceSha256": "c2fae50942282b9bb4d37bfe654a19fc8b810d7cbfa32f673be235c39928a22f",
+      "originalNativeReference": "instructions362436/reviewed-scheduled-task-run-c2fae5094228.png",
+      "decision": "annotated",
+      "reason": "The wide narrow strip makes all three important controls unreadable at guide width. Separate schedule, run control and execution link.",
+      "alt": "1: Review the schedule. 2: Run task now only if no run is pending. 3: Open the execution thread.",
+      "panels": [
+        {"label": "Review the task schedule", "crop": [34, 7, 380, 59]},
+        {"label": "Run once only if no run is pending", "crop": [302, 76, 424, 122]},
+        {"label": "Open the linked execution thread", "crop": [215, 143, 640, 218]}
+      ]
+    },
+    {
+      "name": "Cost review output",
+      "slug": "caldova-cost-review",
+      "source": "originals/reviewed-scheduled-task-html-0f6ab2cedfbf.png",
+      "sourceSha256": "0f6ab2cedfbf94a5211eca61392dccb8e7935aeef072d4e6038e619e04378476",
+      "originalNativeReference": "instructions362436/reviewed-scheduled-task-html-0f6ab2cedfbf.png",
+      "decision": "annotated",
+      "reason": "Stack chart, resource table and assumptions instead of shrinking two columns. Preserve the example estimate and pricing caveats.",
+      "alt": "1: Read the cost chart. 2: Compare resource estimates. 3: Read the pricing assumptions.",
+      "panels": [
+        {"label": "Read the estimated cost chart", "crop": [1, 0, 795, 752]},
+        {"label": "Compare the resource estimates", "crop": [828, 200, 1595, 880]},
+        {"label": "Read the pricing assumptions", "crop": [845, 883, 1585, 985]}
+      ]
+    },
+    {
+      "name": "Live report map",
+      "slug": "caldova-live-report-map",
+      "source": "originals/reviewed-live-report-graph-e6d5eeaf49db.png",
+      "sourceSha256": "e6d5eeaf49db178a49d3fd28e62a5fe1cbfbbbc3f33de002eb405bd0bc100699",
+      "originalNativeReference": "instructions362436/reviewed-live-report-graph-e6d5eeaf49db.png",
+      "decision": "annotated",
+      "reason": "Keep the whole dependency map with inferred edges and actual health colors, then enlarge its legend and authoring control.",
+      "alt": "1: Select a service on the map. 2: Read the health legend. 3: Use Open authoring thread to refine the report.",
+      "panels": [
+        {"label": "Select a service on the map", "crop": [245, 180, 1220, 664], "boxes": [[664, 437, 808, 575]]},
+        {"label": "Read the health legend", "crop": [496, 679, 1080, 735]},
+        {"label": "Refine via Open authoring thread", "crop": [900, 5, 1270, 82]}
+      ]
+    },
+    {
+      "name": "Live report details",
+      "slug": "caldova-live-report-details",
+      "source": "originals/reviewed-live-report-service-details-d19a3ff4820c.png",
+      "sourceSha256": "d19a3ff4820ccd3ec63fbe6b142014b826dc3432abf9ddeb356503a699f84eb7",
+      "originalNativeReference": "instructions362436/reviewed-live-report-service-details-d19a3ff4820c.png",
+      "decision": "annotated",
+      "reason": "Enlarge counts, response times and endpoint rows while preserving failing values. Endpoint columns are separated by an explicit crop gutter.",
+      "alt": "1: Read request and failure counts. 2: Compare response times. 3: Match endpoints to request counts.",
+      "panels": [
+        {"label": "Read request and failure counts", "crop": [75, 426, 780, 608]},
+        {"label": "Compare response times", "crop": [790, 474, 1260, 609]},
+        {"label": "Match endpoints to request counts", "crops": [[79, 626, 670, 761], [1060, 626, 1200, 761]]}
+      ]
+    },
+    {
+      "name": "AAU limit",
+      "slug": "caldova-aau-limit",
+      "source": "originals/reviewed-aau-limit-21f2c8d359ee.png",
+      "sourceSha256": "21f2c8d359eecf3922fdade2cfe9ee74e6fe2072b02f22c41d4416e8e3be86ab",
+      "originalNativeReference": "instructions362436/reviewed-aau-limit-21f2c8d359ee.png",
+      "decision": "annotated",
+      "reason": "Split the long limit strip so its amount and Change AAU allocation control can both be read at guide width.",
+      "alt": "1: Review the monthly allowance. 2: Locate Change AAU allocation.",
+      "panels": [
+        {"label": "Review the monthly allowance", "crop": [24, 117, 470, 190]},
+        {"label": "Inspect Change AAU allocation", "crop": [1236, 125, 1432, 182]}
+      ]
+    },
+    {
+      "name": "AAU allocation controls",
+      "slug": "caldova-aau-controls",
+      "source": "originals/reviewed-aau-allocation-controls-3e3a61f7c836.png",
+      "sourceSha256": "3e3a61f7c83664ff780b0aa6d6cddeffa433dfaf1806ac79dd45196f1c2c1d58",
+      "originalNativeReference": "instructions362436/reviewed-aau-allocation-controls-3e3a61f7c836.png",
+      "decision": "annotated",
+      "reason": "Emphasize the existing allowance and Cancel rather than the disabled Save control; do not change the displayed amount.",
+      "alt": "1: Inspect the monthly active-flow allowance without editing it. 2: Select Cancel.",
+      "panels": [
+        {"label": "Inspect the allowance without changing it", "crop": [207, 109, 599, 169]},
+        {"label": "Select Cancel", "crop": [501, 230, 599, 277]}
+      ]
+    },
+    {
+      "name": "Consumption by thread",
+      "slug": "caldova-consumption-threads",
+      "source": "originals/reviewed-consumption-threads-reference-77063c8ff9c6.png",
+      "sourceSha256": "77063c8ff9c699963050674ae4d514bded59bf085a34af68ca9cd2a3723f0abf",
+      "originalNativeReference": "instructions362436/reviewed-consumption-threads-reference-77063c8ff9c6.png",
+      "decision": "annotated",
+      "reason": "Zoom the three columns requested by the exercise and retain both Active and Completed rows. Keep attribution and identify the adaptation.",
+      "alt": "Compare Thread type, AAUs and Status in the same rows; Active and Completed states remain unchanged.",
+      "credit": "Microsoft Learn - CC BY 4.0. Cropped and annotated.",
+      "attribution": {
+        "author": "Microsoft",
+        "source": "https://learn.microsoft.com/en-us/azure/sre-agent/monitor-agent-usage",
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "modification": "Cropped to the relevant columns and annotated; original retained."
+      },
+      "panels": [
+        {"label": "Compare workflow type, AAUs and status", "crop": [720, 280, 1480, 756], "boxes": [[1023, 286, 1146, 336]]}
+      ]
+    }
+  ]
+}
