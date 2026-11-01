@@ -22,6 +22,14 @@ Keep the config available after selecting the prepared `modernization/dotnet` br
 
 Do not alter the deliberately flawed `finish` review example or the frozen `final\dotnet` files, rulebook copies and manifest to make historical evidence appear newly validated.
 
+### Use the LAB720 entry point
+
+The shared `caldova-rehearsal.zip` contains a root `caldova/README.md` headed **PREL38 Part 2**, with a 15/15/30-minute schedule. Extracting that archive into `C:\lab` places the longer pre-day walkthrough at `C:\lab\caldova\README.md`. That file is separate from the current LAB720 Skillable manual and can send attendees to the wrong timing and track.
+
+During owner-approved LAB720 image preparation, use [lab-root-README.md](lab-root-README.md) as `C:\lab\caldova\README.md`. Inspect the existing file first and preserve any newer authored changes; retain the inherited PREL38 README separately as reference rather than deleting it. Change only this top-level entry point, not the original archive, module repositories, prepared branches, assessment reports or frozen final snapshot.
+
+The replacement directs learners to **Modernize app code** in Skillable and repeats the established LAB720 8/12/25-minute, .NET-only flow. Confirm those values agree with the assigned manual on a fresh learner launch. A repository update alone does not replace the README already stored in the shared VM image; an authorized guest-file update and image capture are needed for future launches to receive it.
+
 ### Verify the configured image
 
 PREL38 verified native loading with Modernize CLI **1.0.62** and explicit **`--model auto`**. That is source evidence for these instructions, not proof that the LAB720 image has the same tools or settings. Do not assume the CLI's default model or VS Code's picker selects Auto for a terminal command.
