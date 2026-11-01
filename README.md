@@ -35,6 +35,10 @@ Fill in the sections below yourself, then:
 ## 🔥LAB720: Hands-on: Modernize apps and databases and automate operations
 ### Session description
 
+Get hands-on using AI to modernize applications, databases, and operations. Use GitHub Copilot to assess and upgrade a Java or .NET app, remediate dependencies, containerize workloads, and modernize the database. Then use Azure SRE Agent to investigate incidents, identify root causes, and automate remediation. Leave with practical experience applying AI agents across the modernization and operations lifecycle.
+
+### Lab walkthrough
+
 This 75-minute hands-on lab combines application modernization and operations automation using two separate training workloads in your assigned lab environment. For Caldova Bank, review a prepared assessment, start a rulebook-guided modernization plan and execution with GitHub Copilot, and check prepared .NET results for database-access changes, personal-data masking, and compatibility. For Caldova Retail Co., use Azure SRE Agent to investigate a product-search failure, verify recovery, schedule cost reviews, and create live traffic-and-health reports.
 
 The modernization section uses the shared [Caldova workshop rulebook](https://github.com/ayangupt/ignite26-caldova-rulebook). All learners use the same training baseline; creating an individual rulebook repository is not a prerequisite.
