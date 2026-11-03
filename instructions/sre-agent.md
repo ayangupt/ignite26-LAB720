@@ -38,11 +38,11 @@ Your private copy lets the agent inspect the application's code and propose chan
 
 The destination form below shows where to select your lab account, name your repository copy, and keep it private.
 
-![GitHub import destination fields with the lab account masked and Private selected](instructions359549/reviewed-destination-a53c82bb8f6a.png)
+![GitHub import destination fields with the lab account masked and Private selected](../img/sre-agent/reviewed-destination-a53c82bb8f6a.png)
 
 This progress screen means the import is running. Leave it open and use the waiting time to open your assigned SRE Agent.
 
-![GitHub preparing the new repository while the import runs in the background](instructions359549/reviewed-progress-dfbc8bcafce4.png)
+![GitHub preparing the new repository while the import runs in the background](../img/sre-agent/reviewed-progress-dfbc8bcafce4.png)
 
 ## 2. Open Azure SRE Agent
 
@@ -60,13 +60,13 @@ The resource list identifies which agent you are opening. Its context wizard con
 
    The resource list below identifies the assigned Caldova agent. Open its name rather than starting a new deployment.
 
-   ![SRE Agent resource list with the assigned Caldova agent; subscription masked](instructions359549/reviewed-agent-list-b627a44cd585.png)
+   ![SRE Agent resource list with the assigned Caldova agent; subscription masked](../img/sre-agent/reviewed-agent-list-b627a44cd585.png)
 
 5. On **More context. Better investigations.**, keep **Quickstart** selected and the **context wizard** open. Review resources and connect the imported repository in the next exercises before selecting **Done and go to agent**.
 
 The context wizard groups the Azure resources, logs, and code available to the agent. Keep this screen open for the next two exercises.
 
-![Context wizard after opening the assigned agent, with Quickstart selected, Code, and connected Logs](instructions359549/reviewed-context-wizard-b929c8710b68.png)
+![Context wizard after opening the assigned agent, with Quickstart selected, Code, and connected Logs](../img/sre-agent/reviewed-context-wizard-b929c8710b68.png)
 
 ## 3. Review Azure resources and telemetry before connecting GitHub
 
@@ -83,11 +83,11 @@ Stay on **Quickstart** in the **context wizard**. GitHub is **not connected yet*
 
 The expanded Azure resource card shows the resource-group boundary for this lab; it is not a request to add access.
 
-![Azure resources expanded to show Resource group scope](instructions359549/azure-resource-scope.png)
+![Azure resources expanded to show Resource group scope](../img/sre-agent/azure-resource-scope.png)
 
 The Logs card confirms which telemetry sources are connected. These provide the evidence for the investigation and Live Report.
 
-![Logs details with Application Insights and Log Analytics Connected](instructions359549/logs-connected.png)
+![Logs details with Application Insights and Log Analytics Connected](../img/sre-agent/logs-connected.png)
 
 Continue to **Connect the imported repository**.
 
@@ -107,15 +107,15 @@ Your repository URL should look like `https://github.com/User1-12345678_events/c
 
 The repository dialog takes the URL of your imported lab copy, as illustrated below.
 
-![Add repositories dialog with GitHub selected and the Repository URL field](instructions359549/reviewed-repository-connection-8c170c30e987.png)
+![Add repositories dialog with GitHub selected and the Repository URL field](../img/sre-agent/reviewed-repository-connection-8c170c30e987.png)
 
 OAuth connects that repository using your lab GitHub identity. Review the account before authorizing the connection.
 
-![OAuth connection method and Sign in to GitHub](instructions359549/github-oauth.png)
+![OAuth connection method and Sign in to GitHub](../img/sre-agent/github-oauth.png)
 
 After saving, the Code card should list your imported repository. This confirms the connection without another readiness exercise.
 
-![Code details with one saved repository](instructions359549/repository-saved.png)
+![Code details with one saved repository](../img/sre-agent/repository-saved.png)
 
 ## 5. Review the Getting started thread
 
@@ -136,7 +136,7 @@ Use this introduction to build an application mental model before making operati
 
 The example below shows how the onboarding thread combines saved context with questions you can answer to refine the agent's understanding.
 
-![Example onboarding thread showing saved context and follow-up questions](instructions359549/reviewed-thread-overview-30ce58f220a8.png)
+![Example onboarding thread showing saved context and follow-up questions](../img/sre-agent/reviewed-thread-overview-30ce58f220a8.png)
 
 *Example from an earlier lab session; your thread title and generated answers may differ.*
 
@@ -159,7 +159,7 @@ The reply can take time. If it is still running, start the independent scheduled
 
 In the configuration response, look for the assigned web app's full HTTPS website link. Save your own URL rather than copying the example instance below.
 
-![Example App Service configuration response](instructions359549/reviewed-default-hostname-0540d408303f.png)
+![Example App Service configuration response](../img/sre-agent/reviewed-default-hostname-0540d408303f.png)
 
 ## 7. Debug the product\-search failure
 
@@ -172,7 +172,7 @@ This exercise connects a real customer symptom with telemetry, code, and a verif
 
    This is the customer-visible failure to investigate: product-name search returns HTTP 500 even though catalog browsing works.
 
-   ![Product-name search fails with HTTP 500](instructions359549/search-failure.png)
+   ![Product-name search fails with HTTP 500](../img/sre-agent/search-failure.png)
 
 3. Return to the SRE Agent tab, select **New chat**, and enter:
 
@@ -207,14 +207,14 @@ SRE Agent is not just for investigating and fixing incidents. **Scheduled tasks*
 
    Once creation is confirmed, the task details show its schedule, run control, and linked execution thread.
 
-   ![Run task now and the linked execution thread for Weekly Caldova cost review](instructions359549/reviewed-scheduled-task-run-c2fae5094228.png)
+   ![Run task now and the linked execution thread for Weekly Caldova cost review](../img/sre-agent/reviewed-scheduled-task-run-c2fae5094228.png)
 
 4. **Don't wait for completion.** Scroll to **Create a live traffic and health report** below and continue.
 5. After that activity, return to **Automation > Weekly Caldova cost review**. Open its latest execution thread, review the findings, and open the HTML slide deck in the VM browser. Select the HTML download link in the result, then select **Open file** in the VM browser's **Downloads** panel. The run has its own thread, separate from the conversation that created the task.
 
 This HTML deck was produced by the scheduled task's execution, not its creation chat. Its cost breakdown combines a chart, resource table, and explicit pricing assumptions. Treat these amounts as example estimates, not your lab's bill; your data and generated layout will differ.
 
-![Scheduled task's HTML slide deck rendered in the VM browser with a cost chart, resource table, and estimate assumptions](instructions359549/reviewed-scheduled-task-html-0f6ab2cedfbf.png)
+![Scheduled task's HTML slide deck rendered in the VM browser with a cost chart, resource table, and estimate assumptions](../img/sre-agent/reviewed-scheduled-task-html-0f6ab2cedfbf.png)
 
 ## 9. Create a live traffic and health report
 
@@ -240,11 +240,11 @@ In this lab, build a read-only traffic and health application: a dependency map 
 
 The map below uses service icons and health rings to make the system easy to scan. Inferred connections and unknown health are labelled rather than presented as verified dependencies.
 
-![Fresh lab report with official Azure service icons, health rings, inferred connections, and a health legend](instructions359549/reviewed-live-report-graph-e6d5eeaf49db.png)
+![Fresh lab report with official Azure service icons, health rings, inferred connections, and a health legend](../img/sre-agent/reviewed-live-report-graph-e6d5eeaf49db.png)
 
 Clicking a service can reveal an interactive details panel below the graph. Here the Web App panel shows request counts, failures, response times, and endpoints from the report's existing telemetry.
 
-![Clicking the Web App icon opens request, failure, response-time, and endpoint details below the graph](instructions359549/reviewed-live-report-service-details-d19a3ff4820c.png)
+![Clicking the Web App icon opens request, failure, response-time, and endpoint details below the graph](../img/sre-agent/reviewed-live-report-service-details-d19a3ff4820c.png)
 
 These examples are from a targeted lab check. Your telemetry, resource names, health, and saved versions will differ. The Web App details summarize observed requests; the Application Insights node describes telemetry collection, not whether the monitored app is healthy.
 
@@ -258,20 +258,20 @@ This is a **budgeting exercise, not another Azure resource-cost analysis**. Set 
 
    The limit card below separates the fixed always-on flow from the active-flow allowance. This example has 10,000 active-flow AAUs; your allocation may differ. **Change AAU allocation** is the entry point for controlling that allowance, not another resource-cost report.
 
-   ![Monthly AAU limit showing always-on flow plus 10,000 active-flow AAUs and Change AAU allocation](instructions359549/reviewed-aau-limit-21f2c8d359ee.png)
+   ![Monthly AAU limit showing always-on flow plus 10,000 active-flow AAUs and Change AAU allocation](../img/sre-agent/reviewed-aau-limit-21f2c8d359ee.png)
 
 2. Select **Change AAU allocation**. Inspect the current monthly active-flow allowance and the control for increasing or decreasing it, then select **Cancel** without changing it.
 
    The allocation panel lets you inspect the monthly active-flow allowance. In this example it remains unchanged at 10,000 AAUs; select **Cancel** after inspecting it.
 
-   ![Change AAU allocation panel with the monthly active-flow allowance and Cancel control](instructions359549/reviewed-aau-allocation-controls-3e3a61f7c836.png)
+   ![Change AAU allocation panel with the monthly active-flow allowance and Cancel control](../img/sre-agent/reviewed-aau-allocation-controls-3e3a61f7c836.png)
 
 3. Briefly review **Total active flow consumption**, **Daily active flow consumption**, and the breakdown under **Chats** and **Scheduled tasks**. Compare the used AAUs with the allowance and notice which workflow type accounts for the usage. This is a quick overview, not a thread-by-thread investigation.
 4. Scroll to **Consumption by thread**. Scan the visible rows' **Thread type**, **AAUs**, and **Status** to see how individual workflows use the allowance. Comparing these amounts helps you budget agent attention as you add workflows.
 
    The thread list below shows where to find each workflow's AAU consumption. This is a Microsoft documentation example, not this lab's usage; your threads and values will differ, and usage updates can lag.
 
-   ![Reference example of Consumption by thread showing workflow types, AAUs, and status](instructions359549/reviewed-consumption-threads-reference-77063c8ff9c6.png)
+   ![Reference example of Consumption by thread showing workflow types, AAUs, and status](../img/sre-agent/reviewed-consumption-threads-reference-77063c8ff9c6.png)
 
    *Reference screenshot: Microsoft, [Monitor agent usage](https://learn.microsoft.com/en-us/azure/sre-agent/monitor-agent-usage), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), reproduced unchanged.*
 
