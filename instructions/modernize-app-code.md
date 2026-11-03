@@ -276,7 +276,7 @@ In your notes, answer:
 
 If you used the review-only fallback, say so; it does not complete the live hands-on outcomes. Stop local app servers, leave unfinished agent work identified, and follow the facilitator's handoff. Do not reset the shared lab.
 
-**Continue to SRE Agent** in the full lab manual, using its own workload and resources.
+**Continue to [Automate operations with Azure SRE Agent](sre-agent.md)** or **SRE Agent** in the full lab manual, using its own workload and resources.
 
 ### If something did not work
 
