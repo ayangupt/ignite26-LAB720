@@ -3,7 +3,7 @@
 | Section | Time | Instructions |
 |---|---|---|
 | Modernize application code with GitHub Copilot | 45 minutes | [modernize-app-code.md](modernize-app-code.md) |
-| Automate operations with Azure SRE Agent | 15 minutes | [sre-agent.md](sre-agent.md) |
+| Automate operations with Azure SRE Agent | 25 minutes | [sre-agent.md](sre-agent.md) |
 
 Use **Modernize app code** in the assigned Skillable instruction pane or the guide linked above. Both use the LAB720 pacing: **8 minutes** to read the prepared assessment, **12 minutes** to plan, and **25 minutes** to execute and verify.
 
