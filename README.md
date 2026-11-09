@@ -1,29 +1,3 @@
-## Before you're done
-
-This repo has been created for your Microsoft Ignite 2026 session. Here's how to get it ready.
-
-**Easiest path — use the agent (recommended):**
-
-- Open GitHub Copilot Chat and say `help me initialize repo`. The agent will walk you through getting the README populated.
-- When you're ready to publish, say `help me finalize repo`. The agent will clean up unused folders, validate everything, and remove this "Before you're done" section and other extra stuff that attendees don't need to see.
-- Curious how it works? Read the [agent workflow](.github/AGENT-WORKFLOW.md).
-
-**Doing it manually?**
-
-Fill in the sections below yourself, then:
-
-- Delete any placeholder folders you don't need (`data/`, `infra/`, etc.)
-- Delete this "Before you're done" section
-- Delete `.github/agents/`, `.github/tests/`, `.github/copilot-instructions.md`, and `.github/AGENT-WORKFLOW.md` — these are template tooling, not part of your published repo
-
-**Folder conventions:**
-
-- Attendee step-by-step guidance goes in `instructions/`. If you use MkDocs or a docs site instead, put it in `docs/` and link to it from this README.
-- Reference material and background reading go in `docs/`.
-- You can add a `.devcontainer/` folder if needed.
-
----
-
 <a name="start-building"></a>
 
 <p align="center">
@@ -35,7 +9,7 @@ Fill in the sections below yourself, then:
 ## 🔥LAB720: Hands-on: Modernize apps and databases and automate operations
 ### Session description
 
-Get hands-on using AI to modernize applications, databases, and operations. Use GitHub Copilot to assess and upgrade a Java or .NET app, remediate dependencies, containerize workloads, and modernize the database. Then use Azure SRE Agent to investigate incidents, identify root causes, and automate remediation. Leave with practical experience applying AI agents across the modernization and operations lifecycle.
+Get hands-on using AI to modernize applications, database access, and operations. Use GitHub Copilot to review a prepared assessment and start modernizing a .NET app, then inspect prepared results for dependency, containerization, and database-access changes. Then use Azure SRE Agent to investigate incidents, identify root causes, and automate remediation. Leave with practical experience applying AI agents across the modernization and operations lifecycle.
 
 ### Lab walkthrough
 
@@ -75,14 +49,14 @@ By the end of this session, you will be able to:
 
 ### 💻 Technologies used
 
-- GitHub Copilot and the `modernize` CLI
-- Visual Studio Code and PowerShell
-- .NET 10 and ASP.NET Core
-- `Microsoft.Data.SqlClient` and managed identity for application-side database access
-- Azure Container Apps (modernization target)
-- Azure SRE Agent
-- Azure App Service
-- Application Insights and Log Analytics
+- [GitHub Copilot](https://learn.microsoft.com/en-us/azure/developer/github-copilot-app-modernization/) and the [`modernize` CLI](https://learn.microsoft.com/en-us/azure/developer/github-copilot-app-modernization/modernization-agent/cli-commands)
+- [Visual Studio Code](https://code.visualstudio.com/docs) and [PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/overview)
+- [.NET 10](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-10/overview) and [ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/overview?view=aspnetcore-10.0)
+- [`Microsoft.Data.SqlClient`](https://learn.microsoft.com/en-us/sql/connect/ado-net/introduction-microsoft-data-sqlclient-namespace?view=sql-server-ver17) and [managed identity](https://learn.microsoft.com/en-us/sql/connect/ado-net/sql/azure-active-directory-authentication?view=sql-server-ver17) for application-side database access
+- [Azure Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/overview) (modernization target)
+- [Azure SRE Agent](https://learn.microsoft.com/en-us/azure/sre-agent/overview)
+- [Azure App Service](https://learn.microsoft.com/en-us/azure/app-service/overview)
+- [Application Insights](https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview) and [Log Analytics](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-overview)
 
 ### 📚 Continue your learning
 
