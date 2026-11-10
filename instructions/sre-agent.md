@@ -229,6 +229,10 @@ In this lab, build a read-only traffic and health application: a dependency map 
 
    ```text
    Create a live report called "Caldova Traffic and Health" using 24 hours of connected telemetry. Before the metric cards, draw a dependency graph using Azure service SVG icons inside circular health-colored rings, not text-only rectangles. Include a legend; label unknown health and inferred connections. Where supported, make nodes clickable for service health and metrics/logs; do not invent links. Below, show request counts, failure rate, response times, top requested/failing URLs, and geography where available. Use interactive charts and filters where supported, use a responsive layout, label missing data, and keep it read-only.
+
+   Build the page in a few smaller steps (layout and styling first, then the dependency graph, then the charts and tables) instead of writing it all at once. Draw each Azure icon once and reuse it.
+
+   Ensure the report is built quickly and the report is performant
    ```
 
 3. Click the arrow beside your response and answer any further questions. Review the report-saving approval and allow only the expected read-only telemetry tools.
