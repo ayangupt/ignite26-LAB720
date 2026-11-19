@@ -44,6 +44,8 @@ The shortened lab starts the CLI at those module roots. If the image also suppor
 
 Setup first selects `main` for planning-start and `modernization/dotnet` for execution-start and execution-finish, then copies the configs. It requires the extracted repositories to be clean, preserves their refs and does not execute archived Git hooks. This prepares the branch selection that the current guide assumes has already happened.
 
+On a fresh install it checks the execution-start plan and compliance report are nonempty and that `.metadata/tasks.json` contains exactly one successful entry for each of the two task IDs in [the LAB720 task-state screenshot](../img/modernization/caldova-task-states.png). This check never edits task state. Verification after a learner's run does not require the tasks to remain in their starting state.
+
 Keep the config available after selecting the prepared branch. Inspect existing configuration and authored work before changing it; do not reset repositories or overwrite a learner's plan. Local `rulebook\charter.md`, `policies.md` and `targets.md` in the planning workspace should be reading copies of the shared baseline.
 
 Do not alter the deliberately flawed `finish` review example or the frozen `final\dotnet` files, rulebook copies and manifest to make historical evidence appear newly validated.

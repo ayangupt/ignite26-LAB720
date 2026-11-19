@@ -142,7 +142,10 @@ try {
                 if ($state -eq 'start') {
                     $plan = 'apps/CaldovaAuthGateway/.github/modernize/caldova-dotnet-modernization'
                     Write-FixtureFile $repo "$plan/plan.md"
-                    Write-FixtureFile $repo "$plan/.metadata/tasks.json" '{"tasks":[]}'
+                    Write-FixtureFile $repo "$plan/rulebook-compliance.md"
+                    $task001 = @{id='001-upgrade-dotnet-framework-to-net10'; status='success'}
+                    $task002 = @{id='002-transform-webforms-ashx-to-aspnetcore-mvc'; status='success'}
+                    Write-FixtureFile $repo "$plan/.metadata/tasks.json" (ConvertTo-Json @{tasks=@($task001,$task002)} -Depth 3)
                     Write-FixtureFile $repo 'apps/CaldovaAuthGateway/CaldovaAuthGateway.csproj' '<Project />'
                 }
                 else {
@@ -241,6 +244,45 @@ try {
         Move-Item -LiteralPath $file -Destination "$file.saved"
         Assert-Throws { Assert-LabContent -Root $payload } '*guide-required file is missing*'
         Move-Item -LiteralPath "$file.saved" -Destination $file
+    }
+    $preparedPlan = Join-Path $payload 'modules/module-03-execute/start/apps/CaldovaAuthGateway/.github/modernize/caldova-dotnet-modernization'
+    Test-Case 'Fresh setup rejects missing or empty prepared review evidence' {
+        foreach ($name in @('plan.md','rulebook-compliance.md')) {
+            $file = Join-Path $preparedPlan $name
+            Move-Item -LiteralPath $file -Destination "$file.saved"
+            try {
+                Assert-Throws { Assert-LabContent -Root $payload -CheckPreparedStart } "*guide-required file is missing:*$name*"
+                [IO.File]::WriteAllText($file, " `r`n")
+                Assert-Throws { Assert-LabContent -Root $payload -CheckPreparedStart } "*prepared $name is empty*"
+            }
+            finally { Move-Item -LiteralPath "$file.saved" -Destination $file -Force }
+        }
+    }
+    Test-Case 'Fresh setup requires both specific task IDs to be successful, without repairing task state' {
+        $file = Join-Path $preparedPlan '.metadata/tasks.json'
+        $original = [IO.File]::ReadAllBytes($file)
+        $pending = @{id=$task002.id; status='pending'}
+        $other = @{id='002-unrelated'; status='success'}
+        try {
+            foreach ($case in @(
+                @{json='{'; error='*Invalid JSON*'},
+                @{json='{}'; error='*Expected a tasks array*'},
+                @{json='{"tasks":[]}'; error="*'$($task001.id)'*"},
+                @{tasks=@($task002); id=$task001.id},
+                @{tasks=@($task001,$pending,$other); id=$task002.id},
+                @{tasks=@($task001,$task002,$task002); id=$task002.id}
+            )) {
+                if ($case.ContainsKey('json')) { $json = $case.json; $expected = $case.error }
+                else { $json = ConvertTo-Json @{tasks=$case.tasks} -Depth 3; $expected = "*'$($case.id)'*" }
+                [IO.File]::WriteAllText($file, $json)
+                Assert-Throws { Assert-LabContent -Root $payload -CheckPreparedStart } $expected
+                Assert-True ([IO.File]::ReadAllText($file) -ceq $json) 'Validation rewrote the task evidence.'
+            }
+            # Normal verification after the learner runs Modernize does not enforce the starting state.
+            [IO.File]::WriteAllText($file, (ConvertTo-Json @{tasks=@($task001,$pending)} -Depth 3))
+            Assert-LabContent -Root $payload
+        }
+        finally { [IO.File]::WriteAllBytes($file, $original) }
     }
     Test-Case 'Changed frozen final files fail validation' {
         $file = Join-Path $payload 'modules/module-03-execute/final/dotnet/README.md'

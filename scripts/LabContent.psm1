@@ -172,13 +172,14 @@ function Initialize-LabContent {
         Invoke-LabGit -Repository (Join-Path $Root $entry.Key) `
             -Arguments @('switch', '--quiet', '--no-guess', $entry.Value) | Out-Null
     }
-    Assert-LabContent -Root $Root
+    Assert-LabContent -Root $Root -CheckPreparedStart
 }
 
 function Assert-LabContent {
-    param([Parameter(Mandatory)][string]$Root)
+    param([Parameter(Mandatory)][string]$Root, [switch]$CheckPreparedStart)
 
     Get-PayloadRoot -ExtractionDirectory $Root | Out-Null
+    $executionPlan = 'modules/module-03-execute/start/apps/CaldovaAuthGateway/.github/modernize/caldova-dotnet-modernization'
     $requiredFiles = @(
         'modules/module-02-plan/start/goals/dotnet.txt',
         'modules/module-02-plan/start/skills/pii-masking/SKILL.md',
@@ -187,8 +188,9 @@ function Assert-LabContent {
         'modules/module-02-plan/start/rulebook/targets.md',
         'modules/module-02-plan/start/apps/CaldovaAuthGateway/CaldovaAuthGateway.csproj',
         'modules/module-03-execute/start/apps/CaldovaAuthGateway/CaldovaAuthGateway.csproj',
-        'modules/module-03-execute/start/apps/CaldovaAuthGateway/.github/modernize/caldova-dotnet-modernization/plan.md',
-        'modules/module-03-execute/start/apps/CaldovaAuthGateway/.github/modernize/caldova-dotnet-modernization/.metadata/tasks.json',
+        "$executionPlan/plan.md",
+        "$executionPlan/rulebook-compliance.md",
+        "$executionPlan/.metadata/tasks.json",
         'modules/module-03-execute/finish/apps/CaldovaAuthGateway/CaldovaAuthGateway.csproj',
         'modules/module-03-execute/finish/apps/CaldovaAuthGateway/Tests/CaldovaAuthGateway.Tests.csproj',
         'modules/module-03-execute/finish/apps/CaldovaLoanPortal/Dockerfile',
@@ -197,6 +199,28 @@ function Assert-LabContent {
     foreach ($relativePath in $requiredFiles) {
         if (-not (Test-Path -LiteralPath (Join-Path $Root $relativePath) -PathType Leaf)) {
             throw "A guide-required file is missing: $relativePath. This is not a ready LAB720 workspace."
+        }
+    }
+    if ($CheckPreparedStart) {
+        $planRoot = Join-Path $Root $executionPlan
+        foreach ($name in @('plan.md', 'rulebook-compliance.md')) {
+            if ([string]::IsNullOrWhiteSpace([IO.File]::ReadAllText((Join-Path $planRoot $name)))) {
+                throw "The prepared $name is empty. The execution-start checkpoint is not ready."
+            }
+        }
+        $tasksPath = Join-Path $planRoot '.metadata/tasks.json'
+        $json = [IO.File]::ReadAllText($tasksPath)
+        try { $state = ConvertFrom-Json -InputObject $json -ErrorAction Stop }
+        catch { throw "Invalid JSON in the prepared task state: $tasksPath" }
+        if ($null -eq $state -or -not $state.PSObject.Properties['tasks'] -or $state.tasks -isnot [array]) {
+            throw "Expected a tasks array in the prepared task state: $tasksPath"
+        }
+        foreach ($id in @('001-upgrade-dotnet-framework-to-net10', '002-transform-webforms-ashx-to-aspnetcore-mvc')) {
+            $entries = @($state.tasks | Where-Object { $_ -and $_.PSObject.Properties['id'] -and $_.id -is [string] -and $_.id -ceq $id })
+            if ($entries.Count -ne 1 -or -not $entries[0].PSObject.Properties['status'] -or
+                $entries[0].status -isnot [string] -or $entries[0].status -cne 'success') {
+                throw "Expected exactly one prepared task '$id' with status 'success' in $tasksPath. Do not start execution."
+            }
         }
     }
     $assessmentRoot = Join-Path $Root 'modules/module-01-assess/start/.github/modernize/assessment-prebuilt'
