@@ -3,6 +3,7 @@
   "provenance": "https://github.com/microsoft/ignite26-lab-management/issues/689",
   "rehearsal": {
     "fileName": "caldova-rehearsal.zip",
+    "url": null,
     "sha256": "3ccd36a065f354a16f219aa8b89660b4195fb01655e748e0fdd04c01ef41f231"
   },
   "final": {

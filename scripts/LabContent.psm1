@@ -55,6 +55,20 @@ function Assert-LabArchives {
     if ($FinalArchive) { Assert-ArchiveHash -Path $FinalArchive -ExpectedHash $script:Packages.final.sha256 }
 }
 
+function Get-RehearsalDownloadUri {
+    $source = $script:Packages.rehearsal.url
+    if ([string]::IsNullOrWhiteSpace($source)) {
+        throw 'No approved download is configured for the LAB720 starting archive. Pass -LabArchive with an authorized local copy of caldova-rehearsal.zip. If you only have the clone, use scripts/review-final.ps1 for the final-checkpoint review.'
+    }
+
+    $uri = $null
+    if (-not [uri]::TryCreate($source, [UriKind]::Absolute, [ref]$uri) -or
+        $uri.Scheme -ne 'https' -or -not $uri.Host -or $uri.UserInfo -or $uri.Query -or $uri.Fragment) {
+        throw 'rehearsal.url must be a stable HTTPS download URL without credentials, a query string or a fragment.'
+    }
+    return $uri
+}
+
 function Assert-FinalSnapshot {
     param([Parameter(Mandatory)][string]$Root)
 
@@ -201,4 +215,4 @@ function Assert-LabContent {
     Assert-FinalSnapshot -Root (Join-Path $Root 'modules/module-03-execute/final/dotnet')
 }
 
-Export-ModuleMember -Function Expand-LabContent, Initialize-LabContent, Assert-LabContent, Expand-FinalSnapshot, Assert-LabArchives
+Export-ModuleMember -Function Expand-LabContent, Initialize-LabContent, Assert-LabContent, Expand-FinalSnapshot, Assert-LabArchives, Get-RehearsalDownloadUri

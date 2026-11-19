@@ -249,7 +249,57 @@ try {
 
     $setupScript = Join-Path $repositoryRoot 'scripts/setup.ps1'
     $destination = Join-Path $testRoot 'installed lab [1]'
+    Test-Case 'An omitted or unsafe rehearsal URL cannot enable a download' {
+        try {
+            & $contentModule { $script:Packages.rehearsal.url = $null }
+            Assert-Throws { Get-RehearsalDownloadUri } '*No approved download*-LabArchive*review-final.ps1*'
+            foreach ($invalid in @('http://example.invalid/a.zip', 'file:///archive.zip',
+                'https://user@example.invalid/a.zip', 'https://example.invalid/a.zip?token=example',
+                'https://example.invalid/a.zip#fragment')) {
+                & $contentModule { param($Value) $script:Packages.rehearsal.url = $Value } $invalid
+                Assert-Throws { Get-RehearsalDownloadUri } '*must be a stable HTTPS download URL*'
+            }
+        }
+        finally {
+            & $contentModule { param($Value) $script:Packages.rehearsal.url = $Value } $packages.rehearsal.url
+        }
+    }
     if ($IsWindows) {
+        Test-Case 'Full setup without a source gives both supported options before creating files' {
+            try {
+                & $contentModule { $script:Packages.rehearsal.url = $null }
+                function Invoke-WebRequest { throw 'Unexpected network request' }
+                Assert-Throws { & $setupScript -LabRoot $destination } '*No approved download*-LabArchive*review-final.ps1*'
+                Assert-True (-not (Test-Path -LiteralPath $destination)) 'Setup without a source wrote a destination.'
+                Assert-True (@(Get-ChildItem -LiteralPath $testRoot -Directory -Force -Filter '.lab720-staging-*').Count -eq 0) 'Staging leaked.'
+            }
+            finally {
+                & $contentModule { param($Value) $script:Packages.rehearsal.url = $Value } $packages.rehearsal.url
+            }
+        }
+        Test-Case 'A configured rehearsal download uses the same checksum gate and full install as local input' {
+            $source = 'https://example.invalid/lab720-fixture.zip'
+            $fromDownload = Join-Path $testRoot 'downloaded installation'
+            try {
+                & $contentModule { param($Value) $script:Packages.rehearsal.url = $Value } $source
+                $responseFile = $FinalArchive
+                function Invoke-WebRequest {
+                    param([uri]$Uri, $OutFile, [switch]$UseBasicParsing)
+                    if ($Uri.AbsoluteUri -cne $source) { throw 'Unexpected rehearsal URL.' }
+                    Copy-Item -LiteralPath $responseFile -Destination $OutFile
+                }
+                Assert-Throws { & $setupScript -FinalArchive $FinalArchive -LabRoot $fromDownload -SkipToolInstallation } '*SHA-256 mismatch*'
+                Assert-True (-not (Test-Path -LiteralPath $fromDownload)) 'Wrong response installed a workspace.'
+                Assert-True (@(Get-ChildItem -LiteralPath $testRoot -Directory -Force -Filter '.lab720-staging-*').Count -eq 0) 'Rejected download was retained.'
+                $responseFile = $archive
+                & $setupScript -FinalArchive $FinalArchive -LabRoot $fromDownload -SkipToolInstallation
+                Assert-LabContent -Root $fromDownload
+                Assert-True (@(Get-ChildItem -LiteralPath $testRoot -Directory -Force -Filter '.lab720-staging-*').Count -eq 0) 'Successful download was retained.'
+            }
+            finally {
+                & $contentModule { param($Value) $script:Packages.rehearsal.url = $Value } $packages.rehearsal.url
+            }
+        }
         Test-Case 'Built-in Windows PowerShell forwards setup to PowerShell 7 without installing tools' {
             # The child has the unmodified production manifest, so the synthetic starting ZIP must fail.
             $badArchive = Join-Path $testRoot 'not the original.zip'

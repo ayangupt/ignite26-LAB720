@@ -19,10 +19,10 @@ The historical handoff records successful LAB720 image checks, not a clean-machi
 
 Before calling the self-serve track ready:
 
-- Establish an approved distribution path for the real LAB720 starting archive and confirm it contains every artifact referenced by the current guide.
-- Rehearse installation on a clean Windows 11 machine, including tool installation, user sign-in, prepared branch/task state, and planning/execution rulebook loading.
-- Run the prepared gateway's build, 13 tests and local route checks from the LAB720 guide. Keep database-backed login, Azure and SRE outside this scope.
-- Record any compatibility changes needed for current tools. The historical successful image used Modernize 1.0.62, GitHub CLI 2.90.0 and .NET SDK 10.0.403; those historical versions do not establish that the current installers work.
+1. **Approve the source.** Until the content owner approves a public distribution location for the exact `caldova-rehearsal.zip`, leave `rehearsal.url` **null**. An authorized private copy can be used with `-LabArchive` for rehearsal; private transfer does not authorize public hosting. Once public distribution is approved, set only `rehearsal.url` in [workload-manifest.json](workload-manifest.json) to a stable, anonymous HTTPS download for those bytes (no credentials or signed links). Keep the recorded hash; a mismatch is a release blocker, not a reason to update the digest.
+2. **Rehearse the public command.** On clean Windows 11, clone or unzip the candidate revision. Once the source is approved and configured, start in built-in Windows PowerShell and run `powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\scripts\setup.ps1` with **no** archive or skip arguments. Use the default `C:\lab\caldova`. Confirm both packages download, the tools install, and a second invocation preserves the installed workspace.
+3. **Run the 50-minute guide.** Sign in, run `scripts/verify.ps1`, and follow the [participant guide](../instructions/modernize-app-code.md). Open the prepared assessment and both gateway facts; confirm the prepared plan, compliance report, and `success` status for tasks 001/002 **before** starting execution. Observe `Rulebook loaded (3 files)` separately in live planning and execution. From the prepared `finish`, build the gateway, verify 13 passing tests and check the local `/health` and unauthenticated `/WhoAmI.ashx` responses. Do not substitute `final` results or run database-backed login, Azure or SRE.
+4. **Record the result before changing the preview label.** Capture the candidate commit, Windows build, package hashes, installed tool versions, and which of the checks above passed, failed or did not run. Do not include tokens, account details or private teaching artifacts. The historical successful image used Modernize 1.0.62, GitHub CLI 2.90.0 and .NET SDK 10.0.403; it is not evidence that the new installer worked.
 
 ## Modernization rulebook configuration
 
@@ -68,7 +68,7 @@ With PowerShell 7 and Git installed, run:
 pwsh -NoProfile -File .\scripts\tests\content.Tests.ps1
 ```
 
-The checks use synthetic repositories and the real public final package. Supply `-FinalArchive` to reuse a downloaded copy without network access. No Pester or private workload download is required. Only the expected rehearsal digest is replaced in the test process; production scripts are loaded unchanged.
+The checks use synthetic starting repositories and the real public final package. Supply `-FinalArchive` to reuse a downloaded copy without network access. No Pester or private workload download is required. Rehearsal-source cases use an in-memory fixture URL, download response and digest; production scripts and the on-disk manifest are unchanged.
 
 These checks cover two-package extraction, hash failures, final-file/manifest tampering, preservation of Git refs, prepared branch selection, missing guide inputs, dirty-workspace refusal and download failures. On Windows they also invoke the actual setup with `-SkipToolInstallation` and check configuration placement, non-overwrite behavior and cleanup. A separate Windows check starts from built-in Windows PowerShell and verifies that the PowerShell 7 child rejects the synthetic archive. The GitHub Actions workflow runs on Windows and Linux; Windows Server fixture checks are **not** a clean Windows 11 tool-installation or real-workload rehearsal.
 

@@ -1,7 +1,7 @@
 #requires -Version 5.1
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
     [string]$LabArchive,
 
     [string]$FinalArchive,
@@ -87,13 +87,17 @@ function Install-ModernizeCli {
     }
 }
 
-$archivePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($LabArchive)
-if (-not (Test-Path -LiteralPath $archivePath -PathType Leaf)) {
-    throw "Lab archive not found: $archivePath. Obtain an authorized Caldova modernization archive before running setup."
+if ($LabArchive) {
+    $archivePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($LabArchive)
+    if (-not (Test-Path -LiteralPath $archivePath -PathType Leaf)) {
+        throw "Lab archive not found: $archivePath. Obtain an authorized Caldova modernization archive before running setup."
+    }
+    if ([IO.Path]::GetExtension($archivePath) -ine '.zip') {
+        throw 'LabArchive must be a .zip file.'
+    }
 }
-$archiveExtension = [IO.Path]::GetExtension($archivePath)
-if (-not $archiveExtension.Equals('.zip', [StringComparison]::OrdinalIgnoreCase)) {
-    throw 'LabArchive must be a .zip file.'
+else {
+    $rehearsalUri = Get-RehearsalDownloadUri
 }
 Sync-SessionPath
 if (-not $SkipToolInstallation -and -not (Test-Command 'winget')) {
@@ -105,37 +109,41 @@ if (Test-Path -LiteralPath $destination) {
     throw "LabRoot already exists: $destination. Setup will not overwrite a learner workspace; choose a new path or move the existing folder yourself."
 }
 
-if ($PSVersionTable.PSVersion.Major -lt 7) {
-    if (-not (Test-Command 'pwsh.exe')) {
-        if ($SkipToolInstallation) {
-            throw 'PowerShell 7 (pwsh.exe) is required when using -SkipToolInstallation.'
-        }
-        # Reject the wrong input before installing anything on the learner's machine.
-        Assert-LabArchives -LabArchive $archivePath -FinalArchive $FinalArchive
-        Invoke-WinGetInstall -Id 'Microsoft.PowerShell'
-        Sync-SessionPath
-        if (-not (Test-Command 'pwsh.exe')) {
-            throw 'PowerShell 7 was installed but pwsh.exe is not on PATH. Open a new terminal and rerun setup.'
-        }
-    }
-
-    $arguments = @('-NoProfile', '-ExecutionPolicy', 'RemoteSigned', '-File', $PSCommandPath,
-        '-LabArchive', $archivePath, '-LabRoot', $destination)
-    if ($FinalArchive) {
-        $arguments += @('-FinalArchive', $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($FinalArchive))
-    }
-    if ($SkipToolInstallation) { $arguments += '-SkipToolInstallation' }
-    & pwsh.exe @arguments
-    if ($LASTEXITCODE -ne 0) { throw "PowerShell 7 setup failed (exit code $LASTEXITCODE). See the error above." }
-    return
-}
-
 # Stage beside the destination so the final move stays on one volume and extracted paths stay short.
 $destinationParent = [IO.Path]::GetDirectoryName($destination)
 [IO.Directory]::CreateDirectory($destinationParent) | Out-Null
 $stagingDirectory = Join-Path $destinationParent ".lab720-staging-$([guid]::NewGuid().ToString('N').Substring(0, 8))"
 try {
     [IO.Directory]::CreateDirectory($stagingDirectory) | Out-Null
+    if (-not $LabArchive) {
+        $archivePath = Join-Path $stagingDirectory 'caldova-rehearsal.zip'
+        Write-Host 'Downloading the LAB720 starting archive from the configured source...'
+        Invoke-WebRequest -UseBasicParsing -Uri $rehearsalUri -OutFile $archivePath
+    }
+    if ($PSVersionTable.PSVersion.Major -lt 7) {
+        if (-not (Test-Command 'pwsh.exe')) {
+            if ($SkipToolInstallation) {
+                throw 'PowerShell 7 (pwsh.exe) is required when using -SkipToolInstallation.'
+            }
+            # Reject the wrong input before installing anything on the learner's machine.
+            Assert-LabArchives -LabArchive $archivePath -FinalArchive $FinalArchive
+            Invoke-WinGetInstall -Id 'Microsoft.PowerShell'
+            Sync-SessionPath
+            if (-not (Test-Command 'pwsh.exe')) {
+                throw 'PowerShell 7 was installed but pwsh.exe is not on PATH. Open a new terminal and rerun setup.'
+            }
+        }
+
+        $arguments = @('-NoProfile', '-ExecutionPolicy', 'RemoteSigned', '-File', $PSCommandPath,
+            '-LabArchive', $archivePath, '-LabRoot', $destination)
+        if ($FinalArchive) {
+            $arguments += @('-FinalArchive', $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($FinalArchive))
+        }
+        if ($SkipToolInstallation) { $arguments += '-SkipToolInstallation' }
+        & pwsh.exe @arguments
+        if ($LASTEXITCODE -ne 0) { throw "PowerShell 7 setup failed (exit code $LASTEXITCODE). See the error above." }
+        return
+    }
     $payloadRoot = Expand-LabContent -LabArchive $archivePath -FinalArchive $FinalArchive -StagingDirectory $stagingDirectory
 
     $configSource = Join-Path $PSScriptRoot '..\infra\modernize-config.json'

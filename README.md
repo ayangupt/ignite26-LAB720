@@ -46,6 +46,8 @@ Run setup with the archive path. It installs PowerShell 7 if needed, then contin
 powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\scripts\setup.ps1 -LabArchive C:\path\to\caldova-rehearsal.zip
 ```
 
+For this preview, omitting `-LabArchive` stops setup before it installs tools. There is no approved starting-archive download in the manifest yet.
+
 If you already use PowerShell 7, `pwsh -NoProfile -File .\scripts\setup.ps1 -LabArchive C:\path\to\caldova-rehearsal.zip` runs the same setup directly.
 
 By default, the lab files are installed under `C:\lab\caldova`, matching the guide and historical metadata. Setup will not overwrite an existing lab folder. `-LabRoot` accepts another path that does not yet exist, but relocation of the historical plan/assessment metadata has not been rehearsed; use the default for the first real-content rehearsal.
