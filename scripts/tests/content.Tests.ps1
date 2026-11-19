@@ -1,7 +1,8 @@
 #requires -Version 7.0
 [CmdletBinding()]
 param(
-    [string]$FinalArchive
+    [string]$FinalArchive,
+    [switch]$InstallParticipantTools
 )
 
 Set-StrictMode -Version Latest
@@ -11,6 +12,9 @@ $contentModule = Import-Module (Join-Path $repositoryRoot 'scripts/LabContent.ps
 $packages = Get-Content -LiteralPath (Join-Path $repositoryRoot 'infra/workload-manifest.json') -Raw | ConvertFrom-Json
 $testRoot = Join-Path ([IO.Path]::GetTempPath()) "lab720-tests-$([guid]::NewGuid().ToString('N').Substring(0, 8))"
 $script:passed = 0
+if ($InstallParticipantTools -and -not $IsWindows) {
+    throw '-InstallParticipantTools requires a disposable Windows machine.'
+}
 
 function Assert-True {
     param([bool]$Condition, [string]$Message)
@@ -311,7 +315,7 @@ try {
             Assert-True (-not (Test-Path -LiteralPath $destination)) 'Failed handoff wrote a destination.'
         }
         Test-Case 'The actual Windows setup installs content, README and four configs' {
-            & $setupScript -LabArchive $archive -FinalArchive $FinalArchive -LabRoot $destination -SkipToolInstallation
+            & $setupScript -LabArchive $archive -FinalArchive $FinalArchive -LabRoot $destination -SkipToolInstallation:(!$InstallParticipantTools)
             Assert-LabContent -Root $destination
             Assert-True ([IO.File]::ReadAllText((Join-Path $destination 'README-ORIGINAL.md')) -eq 'Original fixture entry point.') 'Original README not preserved.'
             foreach ($relative in @('modules/module-02-plan/start', 'modules/module-03-execute/start',
@@ -321,6 +325,18 @@ try {
                 Assert-True ($config.portfolio_url -eq 'https://github.com/ayangupt/ignite26-caldova-rulebook') 'Wrong rulebook source.'
             }
             Assert-True (@(Get-ChildItem -LiteralPath $testRoot -Directory -Force -Filter '.lab720-staging-*').Count -eq 0) 'Staging leaked after success.'
+        }
+        if ($InstallParticipantTools) {
+            Test-Case 'The installed participant tools run without signing in' {
+                foreach ($tool in @('git', 'gh', 'code', 'modernize')) {
+                    & $tool --version
+                    Assert-True ($LASTEXITCODE -eq 0) "$tool --version failed."
+                }
+                $sdks = @(& dotnet --list-sdks)
+                Assert-True ($LASTEXITCODE -eq 0 -and @($sdks -match '^10\.').Count -gt 0) ".NET 10 SDK missing: $sdks"
+                $extensions = @(& code --list-extensions)
+                Assert-True ($LASTEXITCODE -eq 0 -and $extensions -contains 'GitHub.copilot-chat') "Copilot Chat extension missing: $extensions"
+            }
         }
         Test-Case 'A second setup refuses to overwrite an installed workspace' {
             Assert-Throws { & $setupScript -LabArchive $archive -FinalArchive $FinalArchive -LabRoot $destination -SkipToolInstallation } '*LabRoot already exists*'

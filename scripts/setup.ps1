@@ -47,7 +47,7 @@ function Invoke-WinGetInstall {
     )
 
     Write-Host "Installing $Id..."
-    & winget install --id $Id --exact --accept-package-agreements --accept-source-agreements
+    & winget install --id $Id --exact --source winget --silent --disable-interactivity --accept-package-agreements --accept-source-agreements
     if ($LASTEXITCODE -ne 0 -and $alreadyInstalledCodes -notcontains $LASTEXITCODE) {
         throw "winget failed to install $Id (exit code $LASTEXITCODE)."
     }

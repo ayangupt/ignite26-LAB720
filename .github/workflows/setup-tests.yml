@@ -37,3 +37,14 @@ jobs:
         if: runner.os == 'Linux'
         shell: pwsh
         run: ./scripts/tests/review-final.Tests.ps1
+
+  windows11-tools:
+    runs-on: windows-11-arm
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Exercise Windows 11 tool installation without a learner account
+        shell: pwsh
+        run: ./scripts/tests/content.Tests.ps1 -InstallParticipantTools
