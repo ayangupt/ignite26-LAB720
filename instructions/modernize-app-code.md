@@ -19,7 +19,7 @@ Results from your live runs and prepared examples are separate evidence. An unfi
 
 ## Get ready
 
-For a self-serve setup, first run the repository's [setup script](../README.md#getting-started) and open a new PowerShell 7 terminal. The default install location below is **C:\lab\caldova**. If you selected another `-LabRoot`, replace that root in the commands and paths in this guide.
+For a self-serve setup with the original archive, follow the [full lab setup](../README.md#full-lab-setup) and open a new PowerShell 7 terminal. Without the archive, use the separate [public final-checkpoint review](review-final.md); it does not set up the steps below. The default install location below is **C:\lab\caldova**. If you selected another `-LabRoot`, replace that root in the commands and paths in this guide.
 
 ### Check sign-in and tools
 

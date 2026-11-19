@@ -3,7 +3,8 @@
 | Track | Time | Instructions |
 |---|---:|---|
 | Modernize application code with GitHub Copilot | 50 minutes | [modernize-app-code.md](modernize-app-code.md) |
+| Review the public final checkpoint (no starting archive) | Self-paced | [review-final.md](review-final.md) |
 
-Use the modernization guide for assessment review, rulebook-guided planning, and validation of the prepared .NET results. Self-serve setup is currently a preview: the original workload archive is not included and still needs an approved distribution source. Read the prerequisites and limitations in the [repository README](../README.md) before starting.
+Use the full modernization guide for assessment, rulebook-guided planning, execution and validation of the prepared results. Its [self-serve setup](../README.md#full-lab-setup) is a preview: the original workload archive is not included and still needs an approved distribution source. If you only have a clone, choose the final-checkpoint review instead; it does not run the agent or recreate the missing exercises.
 
 The SRE Agent guide is not part of this self-serve modernization track.

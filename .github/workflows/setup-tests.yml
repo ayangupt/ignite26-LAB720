@@ -26,3 +26,9 @@ jobs:
       - name: Check setup using synthetic repositories and the published final checkpoint
         shell: pwsh
         run: ./scripts/tests/content.Tests.ps1
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Download the public checkpoint and run its final gateway tests
+        shell: ${{ runner.os == 'Windows' && 'powershell' || 'pwsh' }}
+        run: ./scripts/tests/review-final.Tests.ps1

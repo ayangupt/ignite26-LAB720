@@ -1,6 +1,10 @@
-#requires -Version 7.0
+#requires -Version 5.1
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+if ($PSVersionTable.PSEdition -eq 'Desktop') {
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+}
 
 $script:Packages = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../infra/workload-manifest.json') -Raw |
     ConvertFrom-Json
@@ -54,15 +58,16 @@ function Assert-FinalSnapshot {
     if ((Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash -ine $script:Packages.final.manifestSha256) {
         throw "The frozen final manifest has changed: $manifestPath"
     }
-    $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json -AsHashtable
-    if (-not $manifest.ContainsKey('files') -or $manifest.files.Count -ne $script:Packages.final.fileCount) {
+    $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+    $files = @($manifest.files.PSObject.Properties)
+    if ($files.Count -ne $script:Packages.final.fileCount) {
         throw "The frozen final manifest must list $($script:Packages.final.fileCount) files."
     }
-    foreach ($entry in $manifest.files.GetEnumerator()) {
-        if ([IO.Path]::IsPathRooted($entry.Key) -or $entry.Key -match '(^|[\\/])\.\.([\\/]|$)') {
-            throw "Invalid path in frozen final manifest: $($entry.Key)"
+    foreach ($entry in $files) {
+        if ([IO.Path]::IsPathRooted($entry.Name) -or $entry.Name -match '(^|[\\/])\.\.([\\/]|$)') {
+            throw "Invalid path in frozen final manifest: $($entry.Name)"
         }
-        $file = Join-Path $Root $entry.Key
+        $file = Join-Path $Root $entry.Name
         if (-not (Test-Path -LiteralPath $file -PathType Leaf) -or
             (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -ine $entry.Value) {
             throw "Frozen final file is missing or changed: $file. Do not repair it with a start/finish file."
@@ -85,15 +90,29 @@ function Expand-LabContent {
     if (Test-Path -LiteralPath $finalDirectory) {
         throw 'The rehearsal package unexpectedly contains a final directory. Keep the two LAB720 packages separate.'
     }
+    Expand-FinalSnapshot -Destination $finalDirectory -StagingDirectory $StagingDirectory -FinalArchive $FinalArchive
+    return $payloadRoot
+}
+
+function Expand-FinalSnapshot {
+    param(
+        [Parameter(Mandatory)][string]$Destination,
+        [Parameter(Mandatory)][string]$StagingDirectory,
+        [string]$FinalArchive
+    )
+
+    if (Test-Path -LiteralPath $Destination) {
+        throw "Final checkpoint directory already exists: $Destination. Refusing to overwrite it."
+    }
     if (-not $FinalArchive) {
         $FinalArchive = Join-Path $StagingDirectory $script:Packages.final.fileName
         Write-Host 'Downloading the separate frozen final checkpoint used by LAB720...'
-        Invoke-WebRequest -Uri $script:Packages.final.url -OutFile $FinalArchive
+        Invoke-WebRequest -UseBasicParsing -Uri $script:Packages.final.url -OutFile $FinalArchive
     }
     Assert-ArchiveHash -Path $FinalArchive -ExpectedHash $script:Packages.final.sha256
-    [IO.Compression.ZipFile]::ExtractToDirectory($FinalArchive, $finalDirectory)
-    Assert-FinalSnapshot -Root (Join-Path $finalDirectory 'dotnet')
-    return $payloadRoot
+    $FinalArchive = (Get-Item -LiteralPath $FinalArchive).FullName
+    [IO.Compression.ZipFile]::ExtractToDirectory($FinalArchive, $Destination)
+    Assert-FinalSnapshot -Root (Join-Path $Destination 'dotnet')
 }
 
 function Invoke-LabGit {
@@ -175,4 +194,4 @@ function Assert-LabContent {
     Assert-FinalSnapshot -Root (Join-Path $Root 'modules/module-03-execute/final/dotnet')
 }
 
-Export-ModuleMember -Function Expand-LabContent, Initialize-LabContent, Assert-LabContent
+Export-ModuleMember -Function Expand-LabContent, Initialize-LabContent, Assert-LabContent, Expand-FinalSnapshot

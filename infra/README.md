@@ -13,7 +13,9 @@ The LAB720 environment handoff, [microsoft/ignite26-lab-management#689](https://
 
 The public final package is hosted in PREL38, but its hash is the exact hash recorded for LAB720. Setup never substitutes it for the original teaching modules. Both archives are checked before extraction; the final manifest and all 84 listed files are also checked. The module repositories remain separate from `final\dotnet`.
 
-The historical handoff records successful LAB720 image checks, not a clean-machine test of this repository's installer. **Public clone-and-run readiness remains blocked** until the original workload has an approved source and the actual setup is rehearsed on Windows 11. Do not publish the historical code/report archive merely because the final package is public.
+Without the rehearsal archive, `scripts/review-final.ps1` installs only the frozen checkpoint in a separate review directory. It shares the final-package checks with full setup and is never an implicit fallback. See the [public checkpoint review](../instructions/review-final.md) for what can actually be learned and tested there.
+
+The historical handoff records successful LAB720 image checks, not a clean-machine test of this repository's installer. **Public clone-and-run readiness for the full lab remains blocked** until the original workload has an approved source and the actual setup is rehearsed on Windows 11. Do not publish the historical code/report archive merely because the final package is public.
 
 Before calling the self-serve track ready:
 
@@ -69,3 +71,5 @@ pwsh -NoProfile -File .\scripts\tests\content.Tests.ps1
 The checks use synthetic repositories and the real public final package. Supply `-FinalArchive` to reuse a downloaded copy without network access. No Pester or private workload download is required. Only the expected rehearsal digest is replaced in the test process; production scripts are loaded unchanged.
 
 These checks cover two-package extraction, hash failures, final-file/manifest tampering, preservation of Git refs, prepared branch selection, missing guide inputs, dirty-workspace refusal and download failures. On Windows they also invoke the actual setup with `-SkipToolInstallation` and check configuration placement, non-overwrite behavior and cleanup. The GitHub Actions workflow runs on Windows and Linux; Windows Server fixture checks are **not** a clean Windows 11 tool-installation or real-workload rehearsal.
+
+The public review is checked separately: `scripts/tests/review-final.Tests.ps1` downloads the real checkpoint, runs its 13 final gateway tests with the .NET 10 SDK, and verifies that the tests did not change the snapshot. CI exercises this path with Windows PowerShell 5.1 and with PowerShell 7 on Linux. It does not use any synthetic or private starting material.

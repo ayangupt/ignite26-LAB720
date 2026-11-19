@@ -17,9 +17,18 @@ Follow the [modernization guide](instructions/modernize-app-code.md). The [atten
 
 ### 🚀 Getting started
 
-**Self-serve setup is a preview, not yet a standalone public lab.** The LAB720 starting/review archive still needs an approved distribution location, and the installer still needs a clean Windows 11 rehearsal with that actual archive. Cloning this repository alone does not supply the teaching applications. The existing LAB720 walkthrough remains the curriculum; neither SRE nor Azure provisioning is part of this setup.
+Choose the path that matches the materials you have. Neither path requires Skillable, SRE or Azure provisioning.
 
-#### Prerequisites
+| What you have | Where to start |
+|---|---|
+| Just this repository | [Review the public final checkpoint](instructions/review-final.md). Inspect the three modernized .NET apps and optionally test the final gateway. No Copilot account or starting archive needed. |
+| This repository and an authorized `caldova-rehearsal.zip` | [Set up the full 50-minute lab](#full-lab-setup). Review the original assessment, plan and deliberately flawed `finish`, and work through planning and execution. |
+
+<a id="full-lab-setup"></a>
+
+#### Full lab setup (Windows 11 preview)
+
+The full lab is not yet a standalone public download. The starting archive still needs an approved distribution location, and the installer still needs a clean Windows 11 rehearsal with that archive.
 
 - Windows 11 with [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/). Install PowerShell 7 from Windows PowerShell if needed:
 
@@ -42,7 +51,7 @@ pwsh -NoProfile -File .\scripts\setup.ps1 -LabArchive C:\path\to\caldova-rehears
 
 If you downloaded this repository as a ZIP instead of cloning it, run `Get-ChildItem -Recurse .\scripts | Unblock-File` first so PowerShell can run the scripts.
 
-By default, the lab files are installed under `C:\lab\caldova`, matching the guide and historical metadata. Setup will not overwrite an existing lab folder. `-LabRoot` accepts another empty destination, but relocation of the historical plan/assessment metadata has not been rehearsed; use the default for the first real-content rehearsal.
+By default, the lab files are installed under `C:\lab\caldova`, matching the guide and historical metadata. Setup will not overwrite an existing lab folder. `-LabRoot` accepts another path that does not yet exist, but relocation of the historical plan/assessment metadata has not been rehearsed; use the default for the first real-content rehearsal.
 
 To supply the frozen final package locally, add `-FinalArchive C:\path\to\part2-validated-final-dotnet-20261027.zip`. This avoids the content download, not the tool/package downloads. Use `-SkipToolInstallation` only when the prerequisites are already installed; Git is still needed to select the prepared branches.
 
@@ -68,13 +77,6 @@ If you're following along during a live session:
 1. Use the prepared lab files and assigned account supplied for the session, or run the setup steps above on your own Windows machine.
 2. Sign in to `gh` and VS Code with the same GitHub account, then verify the setup.
 3. Follow the [modernization guide](instructions/modernize-app-code.md). Work through live planning and plan review, then use the prepared execution checkpoint and code for review and validation.
-
-#### On your own
-
-If you're learning at your own pace:
-
-1. Clone the repository and run setup with an authorized archive as described above.
-2. Authenticate with GitHub CLI and VS Code, run the verification script, then follow [Modernize application code with GitHub Copilot](instructions/modernize-app-code.md).
 
 ### 🎯 Learning outcomes
 

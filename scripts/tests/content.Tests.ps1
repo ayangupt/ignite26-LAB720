@@ -121,6 +121,26 @@ try {
     [IO.Compression.ZipFile]::CreateFromDirectory($sourceDirectory, $archive)
     $staging = Join-Path $testRoot 'staging'
 
+    $reviewScript = Join-Path $repositoryRoot 'scripts/review-final.ps1'
+    $review = Join-Path $testRoot 'final review [1]'
+    Test-Case 'The public review rejects a starting ZIP and cleans staging' {
+        Assert-Throws { & $reviewScript -FinalArchive $archive -Destination $review } '*SHA-256 mismatch*'
+        Assert-True (-not (Test-Path -LiteralPath $review)) 'Wrong ZIP left a review destination.'
+        Assert-True (@(Get-ChildItem -LiteralPath $testRoot -Directory -Force -Filter '.lab720-review-*').Count -eq 0) 'Review staging leaked after failure.'
+    }
+    Test-Case 'The public review installs only the real final checkpoint from a local ZIP' {
+        & $reviewScript -FinalArchive $FinalArchive -Destination $review
+        $entries = @(Get-ChildItem -LiteralPath $review -Force)
+        Assert-True ($entries.Count -eq 1 -and $entries[0].Name -ceq 'dotnet') 'The review should contain only the final dotnet folder.'
+        Assert-True (Test-Path -LiteralPath (Join-Path $review 'dotnet/VALIDATION.md') -PathType Leaf) 'Final validation record missing.'
+        Assert-True (@(Get-ChildItem -LiteralPath $testRoot -Directory -Force -Filter '.lab720-review-*').Count -eq 0) 'Review staging leaked after success.'
+    }
+    Test-Case 'A second public review preserves the existing workspace' {
+        Write-FixtureFile $review 'notes.txt' 'Learner notes'
+        Assert-Throws { & $reviewScript -FinalArchive $FinalArchive -Destination $review } '*destination already exists*'
+        Assert-True ([IO.File]::ReadAllText((Join-Path $review 'notes.txt')) -ceq 'Learner notes') 'Existing review was overwritten.'
+    }
+
     Test-Case 'A non-LAB720 starting archive is rejected before extraction' {
         Assert-Throws { Expand-LabContent -LabArchive $archive -FinalArchive $FinalArchive -StagingDirectory $staging } '*SHA-256 mismatch*'
         Assert-True (-not (Test-Path -LiteralPath $staging)) 'Checksum failure wrote content.'
@@ -204,7 +224,7 @@ try {
             param($Path)
             $script:FixtureFinalArchive = $Path
             function script:Invoke-WebRequest {
-                param($Uri, $OutFile)
+                param($Uri, $OutFile, [switch]$UseBasicParsing)
                 if ($Uri -cne $script:Packages.final.url) { throw 'Unexpected download URL.' }
                 Copy-Item -LiteralPath $script:FixtureFinalArchive -Destination $OutFile
             }
