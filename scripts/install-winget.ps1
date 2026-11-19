@@ -15,4 +15,6 @@ if (-not (Get-Module -ListAvailable -Name Microsoft.WinGet.Client)) {
     }
     Install-Module -Name Microsoft.WinGet.Client -Repository PSGallery -Scope CurrentUser -Force
 }
-Microsoft.WinGet.Client\Repair-WinGetPackageManager -ErrorAction Stop
+# A staged Windows image package may not have a matching GitHub release tag.
+# Ask for a published stable release instead of deriving the tag from that package.
+Microsoft.WinGet.Client\Repair-WinGetPackageManager -Latest -Verbose -ErrorAction Stop
