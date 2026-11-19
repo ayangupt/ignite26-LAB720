@@ -49,15 +49,20 @@ function Invoke-FinalGatewayTest {
 
     $work = Join-Path ([IO.Path]::GetTempPath()) "lab720-gw-$([guid]::NewGuid().ToString('N').Substring(0, 12))"
     [IO.Directory]::CreateDirectory($work) | Out-Null
-    $previousPath = $env:PATH
-    $previousRoot = $env:DOTNET_ROOT
+    $previous = @{}
+    foreach ($name in @('PATH','DOTNET_ROOT','DOTNET_GENERATE_ASPNET_CERTIFICATE','DOTNET_ADD_GLOBAL_TOOLS_TO_PATH')) {
+        $previous[$name] = [Environment]::GetEnvironmentVariable($name)
+    }
     Push-Location -LiteralPath $work
     try {
+        # A first SDK invocation normally creates a developer certificate and adds global tools to PATH.
+        $env:DOTNET_GENERATE_ASPNET_CERTIFICATE = 'false'
+        $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
         $dotnet = Get-FinalGatewaySdk -WorkDirectory $work
         $temporarySdk = Join-Path $work 'sdk'
         if ([IO.Path]::GetDirectoryName($dotnet) -eq $temporarySdk) {
             $env:DOTNET_ROOT = $temporarySdk
-            $env:PATH = "$temporarySdk$([IO.Path]::PathSeparator)$previousPath"
+            $env:PATH = "$temporarySdk$([IO.Path]::PathSeparator)$($previous['PATH'])"
         }
         # Select a stable 10.x SDK even on a machine that also has newer SDKs or a preview.
         [IO.File]::WriteAllText((Join-Path $work 'global.json'), '{"sdk":{"version":"10.0.100","rollForward":"latestFeature","allowPrerelease":false}}')
@@ -78,8 +83,12 @@ function Invoke-FinalGatewayTest {
         Write-Host 'Final gateway: 13 passed, 0 failed, 0 skipped. The prepared finish and live execution were not tested.'
     }
     finally {
-        $env:PATH = $previousPath
-        $env:DOTNET_ROOT = $previousRoot
+        foreach ($name in $previous.Keys) {
+            if ($null -eq $previous[$name]) {
+                if (Test-Path -LiteralPath "Env:$name") { Remove-Item -LiteralPath "Env:$name" }
+            }
+            else { [Environment]::SetEnvironmentVariable($name, $previous[$name]) }
+        }
         Pop-Location
         Remove-Item -LiteralPath $work -Recurse -Force
     }

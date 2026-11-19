@@ -166,6 +166,22 @@ try {
 
     $reviewScript = Join-Path $repositoryRoot 'scripts/review-final.ps1'
     $review = Join-Path $testRoot 'final review [1]'
+    Test-Case 'A changed SDK installer cannot run or leave a partial public review' {
+        $gateway = Import-Module (Join-Path $repositoryRoot 'scripts/LabFinalGateway.psm1') -PassThru
+        try {
+            & $gateway {
+                function script:Get-Command { param($Name,$CommandType,$ErrorAction) }
+                function script:Invoke-WebRequest {
+                    param($Uri,$OutFile,[switch]$UseBasicParsing)
+                    [IO.File]::WriteAllText($OutFile, 'invalid installer fixture')
+                }
+            }
+            Assert-Throws { & $reviewScript -FinalArchive $FinalArchive -Destination $review -TestGateway } '*installer checksum mismatch*'
+            Assert-True (-not (Test-Path -LiteralPath $review)) 'Failed SDK verification installed a destination.'
+            Assert-True (@(Get-ChildItem -LiteralPath $testRoot -Directory -Force -Filter '.lab720-review-*').Count -eq 0) 'Failed SDK verification left review staging.'
+        }
+        finally { Remove-Module $gateway }
+    }
     Test-Case 'The public review rejects a starting ZIP and cleans staging' {
         Assert-Throws { & $reviewScript -FinalArchive $archive -Destination $review } '*SHA-256 mismatch*'
         Assert-True (-not (Test-Path -LiteralPath $review)) 'Wrong ZIP left a review destination.'

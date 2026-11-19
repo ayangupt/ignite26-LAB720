@@ -9,6 +9,8 @@ $destination = Join-Path $root 'review'
 $final = Join-Path $destination 'dotnet'
 $beforePath = $env:PATH
 $beforeDotnetRoot = $env:DOTNET_ROOT
+$beforeCertificate = $env:DOTNET_GENERATE_ASPNET_CERTIFICATE
+$beforeGlobalTools = $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH
 $beforeLocation = $PWD.Path
 
 try {
@@ -24,7 +26,8 @@ try {
     }
     $testPath = $env:PATH
     & $scriptPath -Destination $destination -TestGateway
-    if ($env:PATH -cne $testPath -or $env:DOTNET_ROOT -cne $beforeDotnetRoot -or $PWD.Path -cne $beforeLocation) {
+    if ($env:PATH -cne $testPath -or $env:DOTNET_ROOT -cne $beforeDotnetRoot -or $PWD.Path -cne $beforeLocation -or
+        $env:DOTNET_GENERATE_ASPNET_CERTIFICATE -cne $beforeCertificate -or $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH -cne $beforeGlobalTools) {
         throw 'The review changed the caller environment.'
     }
     function Get-SnapshotFiles([string]$Directory) {
