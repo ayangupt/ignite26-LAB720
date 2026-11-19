@@ -36,6 +36,19 @@ function Sync-SessionPath {
     $env:Path = $entries -join [IO.Path]::PathSeparator
 }
 
+function Initialize-LabWinGet {
+    if (Test-Command 'winget') { return }
+    Write-Host 'WinGet is missing. Preparing App Installer for the current user...'
+    & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -File (Join-Path $PSScriptRoot 'install-winget.ps1')
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Could not bootstrap WinGet. See the error above. Install App Installer from the Microsoft Store or contact your administrator, then rerun setup.'
+    }
+    Sync-SessionPath
+    if (-not (Test-Command 'winget')) {
+        throw 'WinGet is still not on PATH. Check the App Installer app execution alias and open a new terminal.'
+    }
+}
+
 function Invoke-WinGetInstall {
     param([Parameter(Mandatory = $true)][string]$Id)
 
@@ -75,7 +88,7 @@ function Install-ModernizeCli {
             -Uri 'https://raw.githubusercontent.com/microsoft/modernize-cli/main/scripts/install.ps1' `
             -OutFile $installerPath
         # The installer calls exit on failure, so run it in a child process and check its exit code.
-        & ([Environment]::ProcessPath) -NoProfile -ExecutionPolicy Bypass -File $installerPath
+        & ([Environment]::ProcessPath) -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $installerPath
         if ($LASTEXITCODE -ne 0) {
             throw "The Modernize CLI installer failed (exit code $LASTEXITCODE)."
         }
@@ -100,9 +113,6 @@ else {
     $rehearsalUri = Get-RehearsalDownloadUri
 }
 Sync-SessionPath
-if (-not $SkipToolInstallation -and -not (Test-Command 'winget')) {
-    throw 'winget is not available. Install or update App Installer from the Microsoft Store, or rerun with -SkipToolInstallation after installing prerequisites manually.'
-}
 
 $destination = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($LabRoot)
 if (Test-Path -LiteralPath $destination) {
@@ -127,6 +137,7 @@ try {
             }
             # Reject the wrong input before installing anything on the learner's machine.
             Assert-LabArchives -LabArchive $archivePath -FinalArchive $FinalArchive
+            Initialize-LabWinGet
             Invoke-WinGetInstall -Id 'Microsoft.PowerShell'
             Sync-SessionPath
             if (-not (Test-Command 'pwsh.exe')) {
@@ -156,8 +167,16 @@ try {
     }
 
     if (-not $SkipToolInstallation) {
+        Import-Module (Join-Path $PSScriptRoot 'LabTools.psm1')
+        Initialize-LabWinGet
         Install-WinGetPackage -Id 'Git.Git' -Command 'git'
-        Install-WinGetPackage -Id 'GitHub.cli' -Command 'gh'
+        if (-not (Test-LabGitHubCli)) {
+            Invoke-WinGetInstall -Id 'GitHub.cli'
+            Sync-SessionPath
+            if (-not (Test-LabGitHubCli)) {
+                throw 'GitHub CLI 2.45.0 or later is required. Check for an older gh executable on PATH before rerunning setup.'
+            }
+        }
         Install-WinGetPackage -Id 'Microsoft.VisualStudioCode' -Command 'code'
 
         $hasDotNet10 = $false

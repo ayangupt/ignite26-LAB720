@@ -26,12 +26,9 @@ foreach ($command in @('git', 'gh', 'code', 'dotnet', 'modernize')) {
     Assert-Command $command
 }
 
-$ghVersionOutput = @(& gh --version)
-if ($LASTEXITCODE -ne 0 -or $ghVersionOutput.Count -eq 0 -or $ghVersionOutput[0] -notmatch 'gh version (\d+\.\d+\.\d+)') {
-    throw 'Unable to determine the GitHub CLI version.'
-}
-if ([version]$Matches[1] -lt [version]'2.45.0') {
-    throw "GitHub CLI 2.45.0 or later is required; found $($Matches[1])."
+Import-Module (Join-Path $PSScriptRoot 'LabTools.psm1')
+if (-not (Test-LabGitHubCli)) {
+    throw 'GitHub CLI 2.45.0 or later is required.'
 }
 
 $sdkVersions = @(& dotnet --list-sdks)

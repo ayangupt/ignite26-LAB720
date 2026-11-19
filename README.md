@@ -30,7 +30,7 @@ Choose the path that matches the materials you have. Neither path requires Skill
 
 The full lab is not yet a standalone public download. The starting archive still needs an approved distribution location, and the installer still needs a clean Windows 11 rehearsal with that archive.
 
-- Windows 11 with [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/) and permission to install tools.
+- Windows 11 with permission to install tools. If [WinGet](https://learn.microsoft.com/en-us/windows/package-manager/winget/) is missing, setup uses Microsoft's `Microsoft.WinGet.Client` module from the PowerShell Gallery to prepare App Installer for the current user. If your organization manages App Installer, ask your administrator to provide it instead.
 - A GitHub account with an active Copilot plan. The modernization agent supports Copilot Free, Pro, Pro+, Business, and Enterprise; see the [official quickstart](https://learn.microsoft.com/en-us/azure/developer/github-copilot-app-modernization/modernization-agent/quickstart) for current requirements.
 - An authorized copy of the **exact LAB720 `caldova-rehearsal.zip` teaching archive** recorded in [the package manifest](infra/workload-manifest.json). Its six historical start/finish repositories are not included here and have no approved public download configured. A facilitator must supply it privately until distribution is approved; do not substitute the final snapshot or redistribute the archive without permission.
 

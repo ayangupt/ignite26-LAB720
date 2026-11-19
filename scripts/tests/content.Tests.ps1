@@ -61,6 +61,25 @@ try {
             [Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$null, [ref]$parseErrors) | Out-Null
             Assert-True ($parseErrors.Count -eq 0) "$($file.Name): $parseErrors"
         }
+        Test-Case 'The installer and verifier distinguish outdated, supported and unrecognized GitHub CLI versions' {
+            $tools = Import-Module (Join-Path $repositoryRoot 'scripts/LabTools.psm1') -Force -PassThru
+            try {
+                foreach ($version in @('2.44.9', '2.45.0', '2.100.0', 'unknown')) {
+                    $probe = {
+                        param($Value)
+                        function gh { $script:LASTEXITCODE = 0; "gh version $Value" }
+                        Test-LabGitHubCli
+                    }
+                    if ($version -eq 'unknown') {
+                        Assert-Throws { & $tools $probe $version } '*Unable to determine*'
+                    }
+                    else {
+                        Assert-True ((& $tools $probe $version) -eq ($version -ne '2.44.9')) "Unexpected result for gh $version."
+                    }
+                }
+            }
+            finally { Remove-Module $tools }
+        }
     }
 
     if (-not $FinalArchive) {
@@ -315,6 +334,11 @@ try {
             Assert-True (-not (Test-Path -LiteralPath $destination)) 'Failed handoff wrote a destination.'
         }
         Test-Case 'The actual Windows setup installs content, README and four configs' {
+            if ($InstallParticipantTools) {
+                foreach ($tool in @('winget', 'pwsh', 'git', 'gh', 'code', 'dotnet', 'modernize')) {
+                    Write-Host "Before setup: $tool present = $([bool](Get-Command $tool -ErrorAction SilentlyContinue))"
+                }
+            }
             & $setupScript -LabArchive $archive -FinalArchive $FinalArchive -LabRoot $destination -SkipToolInstallation:(!$InstallParticipantTools)
             Assert-LabContent -Root $destination
             Assert-True ([IO.File]::ReadAllText((Join-Path $destination 'README-ORIGINAL.md')) -eq 'Original fixture entry point.') 'Original README not preserved.'
@@ -328,12 +352,13 @@ try {
         }
         if ($InstallParticipantTools) {
             Test-Case 'The installed participant tools run without signing in' {
-                foreach ($tool in @('git', 'gh', 'code', 'modernize')) {
+                foreach ($tool in @('winget', 'pwsh', 'git', 'gh', 'code', 'modernize')) {
                     & $tool --version
                     Assert-True ($LASTEXITCODE -eq 0) "$tool --version failed."
                 }
                 $sdks = @(& dotnet --list-sdks)
                 Assert-True ($LASTEXITCODE -eq 0 -and @($sdks -match '^10\.').Count -gt 0) ".NET 10 SDK missing: $sdks"
+                Write-Host "Installed .NET 10 SDKs: $($sdks -match '^10\.' -join '; ')"
                 $extensions = @(& code --list-extensions)
                 Assert-True ($LASTEXITCODE -eq 0 -and $extensions -contains 'GitHub.copilot-chat') "Copilot Chat extension missing: $extensions"
             }
