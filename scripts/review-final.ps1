@@ -2,7 +2,8 @@
 [CmdletBinding()]
 param(
     [string]$Destination = (Join-Path $HOME 'lab720-final-review'),
-    [string]$FinalArchive
+    [string]$FinalArchive,
+    [switch]$TestGateway
 )
 
 Set-StrictMode -Version Latest
@@ -19,6 +20,10 @@ $checkpoint = Join-Path $staging 'checkpoint'
 [IO.Directory]::CreateDirectory($staging) | Out-Null
 try {
     Expand-FinalSnapshot -Destination $checkpoint -StagingDirectory $staging -FinalArchive $FinalArchive
+    if ($TestGateway) {
+        Import-Module (Join-Path $PSScriptRoot 'LabFinalGateway.psm1')
+        Invoke-FinalGatewayTest -Snapshot (Join-Path $checkpoint 'dotnet')
+    }
     [IO.Directory]::Move($checkpoint, $target)
 }
 finally {

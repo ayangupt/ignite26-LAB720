@@ -32,7 +32,7 @@ jobs:
       - name: Test the public checkpoint from Windows PowerShell
         if: runner.os == 'Windows'
         shell: powershell
-        run: ./scripts/tests/review-final.Tests.ps1
+        run: ./scripts/tests/review-final.Tests.ps1 -WithoutInstalledSdk
       - name: Test the public checkpoint from PowerShell 7
         if: runner.os == 'Linux'
         shell: pwsh

@@ -21,7 +21,7 @@ Choose the path that matches the materials you have. Neither path requires Skill
 
 | What you have | Where to start |
 |---|---|
-| Just this repository | [Review the public final checkpoint](instructions/review-final.md). Inspect the three modernized .NET apps and optionally test the final gateway. No Copilot account or starting archive needed. |
+| Just this repository | [Review the public final checkpoint](instructions/review-final.md). Trace a gateway risk from assessment to plan to final code. One command fetches the checkpoint and can run the gateway tests, downloading a temporary .NET 10 SDK if needed. No Copilot account or starting archive needed. |
 | This repository and an authorized `caldova-rehearsal.zip` | [Set up the full 50-minute lab](#full-lab-setup). Review the original assessment, plan and deliberately flawed `finish`, and work through planning and execution. |
 
 <a id="full-lab-setup"></a>
