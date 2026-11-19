@@ -4,6 +4,8 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$LabArchive,
 
+    [string]$FinalArchive,
+
     [string]$LabRoot = 'C:\lab\caldova',
 
     [switch]$SkipToolInstallation
@@ -15,6 +17,8 @@ $ErrorActionPreference = 'Stop'
 if (-not $IsWindows) {
     throw 'The automated setup currently supports Windows 11 only. Follow the official tool installation instructions to set up a different platform manually.'
 }
+
+Import-Module (Join-Path $PSScriptRoot 'LabContent.psm1')
 
 function Test-Command {
     param([Parameter(Mandatory = $true)][string]$Name)
@@ -77,42 +81,10 @@ function Install-ModernizeCli {
         }
     }
     finally {
-        Remove-Item -LiteralPath $installerPath -Force -ErrorAction SilentlyContinue
-    }
-}
-
-function Get-PayloadRoot {
-    param([Parameter(Mandatory = $true)][string]$ExtractionDirectory)
-
-    $candidates = @(
-        (Join-Path $ExtractionDirectory 'caldova'),
-        $ExtractionDirectory
-    )
-    $requiredDirectories = @(
-        'modules\module-01-assess\start',
-        'modules\module-01-assess\start\.github\modernize\assessment-prebuilt',
-        'modules\module-02-plan\start',
-        'modules\module-02-plan\start\apps\CaldovaAuthGateway',
-        'modules\module-02-plan\start\skills\pii-masking',
-        'modules\module-03-execute\start',
-        'modules\module-03-execute\finish',
-        'modules\module-03-execute\start\apps\CaldovaAuthGateway',
-        'modules\module-03-execute\final\dotnet'
-    )
-    $requiredFiles = @(
-        'modules\module-02-plan\start\goals\dotnet.txt',
-        'modules\module-03-execute\finish\apps\CaldovaAuthGateway\Tests\CaldovaAuthGateway.Tests.csproj'
-    )
-
-    foreach ($candidate in $candidates) {
-        $missingDirectory = @($requiredDirectories | Where-Object { -not (Test-Path -LiteralPath (Join-Path $candidate $_) -PathType Container) }).Count -gt 0
-        $missingFile = @($requiredFiles | Where-Object { -not (Test-Path -LiteralPath (Join-Path $candidate $_) -PathType Leaf) }).Count -gt 0
-        if (-not $missingDirectory -and -not $missingFile) {
-            return $candidate
+        if (Test-Path -LiteralPath $installerPath) {
+            Remove-Item -LiteralPath $installerPath -Force
         }
     }
-
-    throw "The archive does not contain the expected Caldova modernization folders (modules\module-01-assess, module-02-plan, and module-03-execute). No files were installed."
 }
 
 $archivePath = [IO.Path]::GetFullPath($LabArchive)
@@ -139,8 +111,7 @@ $destinationParent = [IO.Path]::GetDirectoryName($destination)
 $stagingDirectory = Join-Path $destinationParent ".lab720-staging-$([guid]::NewGuid().ToString('N').Substring(0, 8))"
 try {
     [IO.Directory]::CreateDirectory($stagingDirectory) | Out-Null
-    [IO.Compression.ZipFile]::ExtractToDirectory($archivePath, $stagingDirectory)
-    $payloadRoot = Get-PayloadRoot -ExtractionDirectory $stagingDirectory
+    $payloadRoot = Expand-LabContent -LabArchive $archivePath -FinalArchive $FinalArchive -StagingDirectory $stagingDirectory
 
     $configSource = Join-Path $PSScriptRoot '..\infra\modernize-config.json'
     if (-not (Test-Path -LiteralPath $configSource -PathType Leaf)) {
@@ -149,30 +120,6 @@ try {
     $rootReadmeSource = Join-Path $PSScriptRoot '..\infra\lab-root-README.md'
     if (-not (Test-Path -LiteralPath $rootReadmeSource -PathType Leaf)) {
         throw "The participant README is missing from this repository: $rootReadmeSource"
-    }
-
-    $archiveReadme = Join-Path $payloadRoot 'README.md'
-    $prel38Readme = Join-Path $payloadRoot 'README-PREL38.md'
-    if ((Test-Path -LiteralPath $archiveReadme -PathType Leaf) -and
-        (Test-Path -LiteralPath $prel38Readme)) {
-        throw "The archive already contains README-PREL38.md; refusing to overwrite it while installing the LAB720 README."
-    }
-    if (Test-Path -LiteralPath $archiveReadme -PathType Leaf) {
-        Move-Item -LiteralPath $archiveReadme -Destination $prel38Readme
-    }
-    Copy-Item -LiteralPath $rootReadmeSource -Destination (Join-Path $payloadRoot 'README.md')
-
-    $launchDirectories = @(
-        'modules\module-02-plan\start',
-        'modules\module-03-execute\start',
-        'modules\module-02-plan\start\apps\CaldovaAuthGateway',
-        'modules\module-03-execute\start\apps\CaldovaAuthGateway'
-    )
-    foreach ($relativeDirectory in $launchDirectories) {
-        $launchPath = Join-Path $payloadRoot $relativeDirectory
-        $modernizeDirectory = Join-Path $launchPath '.github\modernize'
-        [IO.Directory]::CreateDirectory($modernizeDirectory) | Out-Null
-        Copy-Item -LiteralPath $configSource -Destination (Join-Path $modernizeDirectory 'config.json') -Force
     }
 
     if (-not $SkipToolInstallation) {
@@ -214,12 +161,46 @@ try {
         }
     }
 
+    if (-not (Test-Command 'git')) {
+        throw 'Git is required to select the prepared LAB720 branches. Install Git before using -SkipToolInstallation.'
+    }
+    Initialize-LabContent -Root $payloadRoot
+
+    $archiveReadme = Join-Path $payloadRoot 'README.md'
+    $originalReadme = Join-Path $payloadRoot 'README-ORIGINAL.md'
+    if ((Test-Path -LiteralPath $archiveReadme -PathType Leaf) -and
+        (Test-Path -LiteralPath $originalReadme)) {
+        throw 'The archive already contains README-ORIGINAL.md; refusing to overwrite it.'
+    }
+    if (Test-Path -LiteralPath $archiveReadme -PathType Leaf) {
+        Move-Item -LiteralPath $archiveReadme -Destination $originalReadme
+    }
+    Copy-Item -LiteralPath $rootReadmeSource -Destination (Join-Path $payloadRoot 'README.md')
+
+    $launchDirectories = @(
+        'modules\module-02-plan\start',
+        'modules\module-03-execute\start',
+        'modules\module-02-plan\start\apps\CaldovaAuthGateway',
+        'modules\module-03-execute\start\apps\CaldovaAuthGateway'
+    )
+    foreach ($relativeDirectory in $launchDirectories) {
+        $launchPath = Join-Path $payloadRoot $relativeDirectory
+        $modernizeDirectory = Join-Path $launchPath '.github\modernize'
+        [IO.Directory]::CreateDirectory($modernizeDirectory) | Out-Null
+        Copy-Item -LiteralPath $configSource -Destination (Join-Path $modernizeDirectory 'config.json') -Force
+    }
+
+    if (Test-Path -LiteralPath $destination) {
+        throw "LabRoot appeared during setup: $destination. Refusing to overwrite or nest the workspace."
+    }
     $resolvedPayloadRoot = (Resolve-Path -LiteralPath $payloadRoot).Path
-    Move-Item -LiteralPath $resolvedPayloadRoot -Destination $destination
+    [IO.Directory]::Move($resolvedPayloadRoot, $destination)
 
     Write-Host "Lab content installed at: $destination"
     Write-Host 'Next: open a new PowerShell 7 terminal, sign in to GitHub in gh and VS Code, then run scripts/verify.ps1.'
 }
 finally {
-    Remove-Item -LiteralPath $stagingDirectory -Recurse -Force -ErrorAction SilentlyContinue
+    if (Test-Path -LiteralPath $stagingDirectory) {
+        Remove-Item -LiteralPath $stagingDirectory -Recurse -Force
+    }
 }

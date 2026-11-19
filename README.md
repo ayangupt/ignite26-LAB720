@@ -17,6 +17,8 @@ Follow the [modernization guide](instructions/modernize-app-code.md). The [atten
 
 ### 🚀 Getting started
 
+**Self-serve setup is a preview, not yet a standalone public lab.** The LAB720 starting/review archive still needs an approved distribution location, and the installer still needs a clean Windows 11 rehearsal with that actual archive. Cloning this repository alone does not supply the teaching applications. The existing LAB720 walkthrough remains the curriculum; neither SRE nor Azure provisioning is part of this setup.
+
 #### Prerequisites
 
 - Windows 11 with [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/). Install PowerShell 7 from Windows PowerShell if needed:
@@ -26,11 +28,13 @@ Follow the [modernization guide](instructions/modernize-app-code.md). The [atten
   ```
 
 - A GitHub account with an active Copilot plan. The modernization agent supports Copilot Free, Pro, Pro+, Business, and Enterprise; see the [official quickstart](https://learn.microsoft.com/en-us/azure/developer/github-copilot-app-modernization/modernization-agent/quickstart) for current requirements.
-- An authorized copy of the `caldova-rehearsal.zip` teaching archive. The archive and application source are not currently included in this repository; do not redistribute them without confirming their license.
+- An authorized copy of the **exact LAB720 `caldova-rehearsal.zip` teaching archive** recorded in [the package manifest](infra/workload-manifest.json). Its six historical start/finish repositories are not included here and have no approved public download configured. A facilitator must supply it privately until distribution is approved; do not substitute the final snapshot or redistribute the archive without permission.
 
-The setup script installs Git, GitHub CLI, Visual Studio Code and its Copilot extensions, the .NET 10 SDK, and the Modernize CLI.
+The setup script installs Git, GitHub CLI, Visual Studio Code and its Copilot extensions, the .NET 10 SDK, and the Modernize CLI. It checks the starting archive's SHA-256, preserves its Git history, and selects the prepared .NET execution/review branches before adding the four launch-directory configs.
 
-Clone this repository and run setup with the archive path:
+The separate frozen `final\dotnet` checkpoint is downloaded automatically from a pinned, public package with its SHA-256 checked. Although hosted in PREL38, these are the **same bytes used by LAB720**, not a replacement curriculum or a substitute for its deliberately flawed `finish` example.
+
+Clone this repository (or download its source ZIP if Git is not installed), open a terminal in its root, and run setup with the archive path:
 
 ```powershell
 pwsh -NoProfile -File .\scripts\setup.ps1 -LabArchive C:\path\to\caldova-rehearsal.zip
@@ -38,7 +42,11 @@ pwsh -NoProfile -File .\scripts\setup.ps1 -LabArchive C:\path\to\caldova-rehears
 
 If you downloaded this repository as a ZIP instead of cloning it, run `Get-ChildItem -Recurse .\scripts | Unblock-File` first so PowerShell can run the scripts.
 
-By default, the lab files are installed under `C:\lab\caldova`, matching the guide's paths. Choose another destination with `-LabRoot`; if you do, use that same path in place of `C:\lab\caldova` in the guide. Setup will not overwrite an existing lab folder. After installation, open a new PowerShell terminal and sign in:
+By default, the lab files are installed under `C:\lab\caldova`, matching the guide and historical metadata. Setup will not overwrite an existing lab folder. `-LabRoot` accepts another empty destination, but relocation of the historical plan/assessment metadata has not been rehearsed; use the default for the first real-content rehearsal.
+
+To supply the frozen final package locally, add `-FinalArchive C:\path\to\part2-validated-final-dotnet-20261027.zip`. This avoids the content download, not the tool/package downloads. Use `-SkipToolInstallation` only when the prerequisites are already installed; Git is still needed to select the prepared branches.
+
+After installation, open a new PowerShell terminal and sign in:
 
 ```powershell
 gh auth login
@@ -51,6 +59,7 @@ pwsh -NoProfile -File .\scripts\verify.ps1
 ```
 
 The rulebook source is public, but planning and execution require your account's Copilot entitlement.
+Verification checks the teaching-file layout, all 84 frozen-final hashes, tools, authentication, configs and 13 prepared-gateway tests. It does not claim that a live Modernize run loaded the rulebook. Confirm **`Rulebook loaded (3 files)`** separately during planning and execution, and follow the guide's local route checks.
 
 #### In a guided session
 
@@ -65,7 +74,7 @@ If you're following along during a live session:
 If you're learning at your own pace:
 
 1. Clone the repository and run setup with an authorized archive as described above.
-2. Run the verification script, authenticate with GitHub CLI and VS Code, then follow [Modernize application code with GitHub Copilot](instructions/modernize-app-code.md).
+2. Authenticate with GitHub CLI and VS Code, run the verification script, then follow [Modernize application code with GitHub Copilot](instructions/modernize-app-code.md).
 
 ### 🎯 Learning outcomes
 

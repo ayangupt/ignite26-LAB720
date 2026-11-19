@@ -1,0 +1,178 @@
+#requires -Version 7.0
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+$script:Packages = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../infra/workload-manifest.json') -Raw |
+    ConvertFrom-Json
+
+function Assert-ArchiveHash {
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][string]$ExpectedHash
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw "Archive not found: $Path"
+    }
+    if ([IO.Path]::GetExtension($Path) -ine '.zip') {
+        throw "Expected a ZIP archive: $Path"
+    }
+    $actual = (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash
+    if ($actual -ine $ExpectedHash) {
+        throw "Archive SHA-256 mismatch: $Path. Expected $ExpectedHash; found $actual. Obtain the LAB720 package recorded in infra/workload-manifest.json; do not bypass the checksum."
+    }
+}
+
+function Get-PayloadRoot {
+    param([Parameter(Mandatory)][string]$ExtractionDirectory)
+
+    foreach ($candidate in @((Join-Path $ExtractionDirectory 'caldova'), $ExtractionDirectory)) {
+        $missing = @(
+            foreach ($module in @('module-01-assess', 'module-02-plan', 'module-03-execute')) {
+                foreach ($state in @('start', 'finish')) {
+                    $gitDirectory = Join-Path $candidate "modules/$module/$state/.git"
+                    if (-not (Test-Path -LiteralPath $gitDirectory -PathType Container)) {
+                        $gitDirectory
+                    }
+                }
+            }
+        )
+        if ($missing.Count -eq 0) {
+            return $candidate
+        }
+    }
+    throw 'The rehearsal archive must contain all six LAB720 start/finish repositories, including their .git directories. The separate final snapshot is not a replacement.'
+}
+
+function Assert-FinalSnapshot {
+    param([Parameter(Mandatory)][string]$Root)
+
+    $manifestPath = Join-Path $Root 'manifest.json'
+    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
+        throw "Frozen final manifest is missing: $manifestPath"
+    }
+    if ((Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash -ine $script:Packages.final.manifestSha256) {
+        throw "The frozen final manifest has changed: $manifestPath"
+    }
+    $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json -AsHashtable
+    if (-not $manifest.ContainsKey('files') -or $manifest.files.Count -ne $script:Packages.final.fileCount) {
+        throw "The frozen final manifest must list $($script:Packages.final.fileCount) files."
+    }
+    foreach ($entry in $manifest.files.GetEnumerator()) {
+        if ([IO.Path]::IsPathRooted($entry.Key) -or $entry.Key -match '(^|[\\/])\.\.([\\/]|$)') {
+            throw "Invalid path in frozen final manifest: $($entry.Key)"
+        }
+        $file = Join-Path $Root $entry.Key
+        if (-not (Test-Path -LiteralPath $file -PathType Leaf) -or
+            (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -ine $entry.Value) {
+            throw "Frozen final file is missing or changed: $file. Do not repair it with a start/finish file."
+        }
+    }
+}
+
+function Expand-LabContent {
+    param(
+        [Parameter(Mandatory)][string]$LabArchive,
+        [Parameter(Mandatory)][string]$StagingDirectory,
+        [string]$FinalArchive
+    )
+
+    Assert-ArchiveHash -Path $LabArchive -ExpectedHash $script:Packages.rehearsal.sha256
+    $rehearsalDirectory = Join-Path $StagingDirectory 'rehearsal'
+    [IO.Compression.ZipFile]::ExtractToDirectory($LabArchive, $rehearsalDirectory)
+    $payloadRoot = Get-PayloadRoot -ExtractionDirectory $rehearsalDirectory
+    $finalDirectory = Join-Path $payloadRoot 'modules/module-03-execute/final'
+    if (Test-Path -LiteralPath $finalDirectory) {
+        throw 'The rehearsal package unexpectedly contains a final directory. Keep the two LAB720 packages separate.'
+    }
+    if (-not $FinalArchive) {
+        $FinalArchive = Join-Path $StagingDirectory $script:Packages.final.fileName
+        Write-Host 'Downloading the separate frozen final checkpoint used by LAB720...'
+        Invoke-WebRequest -Uri $script:Packages.final.url -OutFile $FinalArchive
+    }
+    Assert-ArchiveHash -Path $FinalArchive -ExpectedHash $script:Packages.final.sha256
+    [IO.Compression.ZipFile]::ExtractToDirectory($FinalArchive, $finalDirectory)
+    Assert-FinalSnapshot -Root (Join-Path $finalDirectory 'dotnet')
+    return $payloadRoot
+}
+
+function Invoke-LabGit {
+    param(
+        [Parameter(Mandatory)][string]$Repository,
+        [Parameter(Mandatory)][string[]]$Arguments
+    )
+
+    # Never execute hooks carried in a historical teaching archive.
+    $output = @(& git -c "core.hooksPath=$PSScriptRoot/disabled-hooks" -C $Repository @Arguments)
+    if ($LASTEXITCODE -ne 0) {
+        throw "git $($Arguments -join ' ') failed in $Repository (exit code $LASTEXITCODE)."
+    }
+    return $output
+}
+
+function Initialize-LabContent {
+    param([Parameter(Mandatory)][string]$Root)
+
+    foreach ($module in @('module-01-assess', 'module-02-plan', 'module-03-execute')) {
+        foreach ($state in @('start', 'finish')) {
+            $repository = Join-Path $Root "modules/$module/$state"
+            Invoke-LabGit -Repository $repository -Arguments @('show-ref', '--verify', '--quiet', 'refs/heads/main') | Out-Null
+            $changes = @(Invoke-LabGit -Repository $repository -Arguments @('status', '--porcelain'))
+            if ($changes.Count -gt 0) {
+                throw "The extracted repository is not clean: $repository. Refusing to switch branches."
+            }
+        }
+    }
+    $branches = @{
+        'modules/module-02-plan/start' = 'main'
+        'modules/module-03-execute/start' = 'modernization/dotnet'
+        'modules/module-03-execute/finish' = 'modernization/dotnet'
+    }
+    foreach ($entry in $branches.GetEnumerator()) {
+        Invoke-LabGit -Repository (Join-Path $Root $entry.Key) `
+            -Arguments @('switch', '--quiet', '--no-guess', $entry.Value) | Out-Null
+    }
+    Assert-LabContent -Root $Root
+}
+
+function Assert-LabContent {
+    param([Parameter(Mandatory)][string]$Root)
+
+    Get-PayloadRoot -ExtractionDirectory $Root | Out-Null
+    $requiredFiles = @(
+        'modules/module-02-plan/start/goals/dotnet.txt',
+        'modules/module-02-plan/start/skills/pii-masking/SKILL.md',
+        'modules/module-02-plan/start/rulebook/charter.md',
+        'modules/module-02-plan/start/rulebook/policies.md',
+        'modules/module-02-plan/start/rulebook/targets.md',
+        'modules/module-02-plan/start/apps/CaldovaAuthGateway/CaldovaAuthGateway.csproj',
+        'modules/module-03-execute/start/apps/CaldovaAuthGateway/CaldovaAuthGateway.csproj',
+        'modules/module-03-execute/start/apps/CaldovaAuthGateway/.github/modernize/caldova-dotnet-modernization/plan.md',
+        'modules/module-03-execute/start/apps/CaldovaAuthGateway/.github/modernize/caldova-dotnet-modernization/.metadata/tasks.json',
+        'modules/module-03-execute/finish/apps/CaldovaAuthGateway/CaldovaAuthGateway.csproj',
+        'modules/module-03-execute/finish/apps/CaldovaAuthGateway/Tests/CaldovaAuthGateway.Tests.csproj',
+        'modules/module-03-execute/finish/apps/CaldovaLoanPortal/Dockerfile',
+        'modules/module-03-execute/finish/apps/CaldovaLoanPortal/CaldovaLoanPortal.csproj'
+    )
+    foreach ($relativePath in $requiredFiles) {
+        if (-not (Test-Path -LiteralPath (Join-Path $Root $relativePath) -PathType Leaf)) {
+            throw "A guide-required file is missing: $relativePath. This is not a ready LAB720 workspace."
+        }
+    }
+    $assessmentRoot = Join-Path $Root 'modules/module-01-assess/start/.github/modernize/assessment-prebuilt'
+    if (-not (Test-Path -LiteralPath $assessmentRoot -PathType Container)) {
+        throw "The prepared LAB720 assessment directory is missing: $assessmentRoot"
+    }
+    $reports = @(Get-ChildItem -LiteralPath $assessmentRoot -Directory -Filter 'reports-*')
+    $completeReports = @($reports | Where-Object {
+        (Test-Path -LiteralPath (Join-Path $_.FullName 'index.html') -PathType Leaf) -and
+        (Test-Path -LiteralPath (Join-Path $_.FullName 'repos/CaldovaAuthGateway/facts/data-architecture.md') -PathType Leaf) -and
+        (Test-Path -LiteralPath (Join-Path $_.FullName 'repos/CaldovaAuthGateway/facts/configuration-inventory.md') -PathType Leaf)
+    })
+    if ($completeReports.Count -eq 0) {
+        throw 'The prepared LAB720 assessment is missing its report or gateway database/configuration facts.'
+    }
+    Assert-FinalSnapshot -Root (Join-Path $Root 'modules/module-03-execute/final/dotnet')
+}
+
+Export-ModuleMember -Function Expand-LabContent, Initialize-LabContent, Assert-LabContent

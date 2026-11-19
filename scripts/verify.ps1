@@ -19,6 +19,9 @@ if (-not (Test-Path -LiteralPath $root -PathType Container)) {
     throw "Lab folder not found: $root. Run scripts/setup.ps1 first."
 }
 
+Import-Module (Join-Path $PSScriptRoot 'LabContent.psm1')
+Assert-LabContent -Root $root
+
 foreach ($command in @('git', 'gh', 'code', 'dotnet', 'modernize')) {
     Assert-Command $command
 }
@@ -76,7 +79,7 @@ try {
     Write-Host 'Building and running the prepared gateway tests...'
     & dotnet test $testProject --configuration Release --results-directory $resultsDirectory --logger 'trx;LogFileName=lab720-verify.trx'
     if ($LASTEXITCODE -ne 0) {
-        throw "Gateway tests failed (exit code $LASTEXITCODE)."
+        throw "Gateway tests failed (exit code $LASTEXITCODE). Results are retained at $resultsDirectory."
     }
 
     $trxPath = Join-Path $resultsDirectory 'lab720-verify.trx'
@@ -93,8 +96,10 @@ try {
         [int]$counters.failed -ne 0) {
         throw "Expected 13 passing tests and no failures. TRX counters: $($counters.OuterXml)"
     }
+    Remove-Item -LiteralPath $resultsDirectory -Recurse -Force
     Write-Host 'Verification passed: Modernize config is present and all 13 gateway tests passed.'
 }
-finally {
-    Remove-Item -LiteralPath $resultsDirectory -Recurse -Force -ErrorAction SilentlyContinue
+catch {
+    Write-Host "Verification failed. Any test results are retained at: $resultsDirectory"
+    throw
 }
