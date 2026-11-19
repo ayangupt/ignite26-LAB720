@@ -1,8 +1,10 @@
 # Infrastructure
 
+For the self-serve modernization track, `../scripts/setup.ps1` installs the participant tools, prepares the learner-supplied Caldova archive, replaces its PREL38 root README with [lab-root-README.md](lab-root-README.md), and copies the shared rulebook configuration into the actual CLI launch directories. The archive is not included in this repository; setup requires an authorized local copy.
+
 ## Modernization rulebook configuration
 
-This section is for the lab image preparer, not an additional participant exercise. The [participant guide](../instructions/modernize-app-code.md) uses the same public [Caldova workshop rulebook](https://github.com/ayangupt/ignite26-caldova-rulebook) as PREL38. Learners do not need to publish individual policy repositories.
+The [participant guide](../instructions/modernize-app-code.md) uses the same public [Caldova workshop rulebook](https://github.com/ayangupt/ignite26-caldova-rulebook) as PREL38. Learners do not need to publish individual policy repositories.
 
 The finalized training baseline is **1.0**, commit `5564f81d46c25830910e44dea27a32f32720dabc`. This is workshop policy, not production-policy approval.
 
@@ -22,20 +24,14 @@ Keep the config available after selecting the prepared `modernization/dotnet` br
 
 Do not alter the deliberately flawed `finish` review example or the frozen `final\dotnet` files, rulebook copies and manifest to make historical evidence appear newly validated.
 
-### Use the LAB720 entry point
+### Install the LAB720 entry point
 
-The shared `caldova-rehearsal.zip` contains a root `caldova/README.md` headed **PREL38 Part 2**, with a 15/15/30-minute schedule. Extracting that archive into `C:\lab` places the longer pre-day walkthrough at `C:\lab\caldova\README.md`. That file is separate from the current LAB720 Skillable manual and can send attendees to the wrong timing and track.
+The setup script installs [lab-root-README.md](lab-root-README.md) as `README.md` at the extracted workload root. If the authorized archive already has a root `README.md`, setup renames it to `README-PREL38.md` in the installed copy; it does not modify the source archive. The replacement links to the repository's self-serve guide and describes the 50-minute modernization flow: 5 minutes for setup/transitions, 8 for assessment, 17 for rulebook setup and planning, and 20 for execution and validation.
 
-During owner-approved LAB720 image preparation, use [lab-root-README.md](lab-root-README.md) as `C:\lab\caldova\README.md`. Inspect the existing file first and preserve any newer authored changes; retain the inherited PREL38 README separately as reference rather than deleting it. Change only this top-level entry point, not the original archive, module repositories, prepared branches, assessment reports or frozen final snapshot.
+This repository setup does not update an existing shared VM image. If the lab continues to be offered from a managed image, an authorized guest-file update and image capture are still required for future launches to receive the new entry point.
 
-The replacement directs learners to **Modernize app code** in Skillable and repeats the LAB720 50-minute, .NET-only flow: 5 minutes for setup/transitions, 8 for assessment, 17 for rulebook setup and planning, and 20 for execution and validation. Confirm those values agree with the assigned manual on a fresh learner launch. A repository update alone does not replace the README already stored in the shared VM image; an authorized guest-file update and image capture are needed for future launches to receive it.
+### Verify a self-serve install
 
-### Verify the configured image
+Run `scripts/verify.ps1` from the cloned repository after setup and sign-in. It checks the required local commands, GitHub CLI authentication, .NET 10, Modernize CLI availability, the four launch-directory configs, and the prepared gateway tests. These checks do not prove that a live Modernize operation can access the shared rulebook; on a fresh install, confirm that both planning and execution report **`Rulebook loaded (3 files)`**.
 
-PREL38 verified native loading with Modernize CLI **1.0.62** and explicit **`--model auto`**. That is source evidence for these instructions, not proof that the LAB720 image has the same tools or settings. Do not assume the CLI's default model or VS Code's picker selects Auto for a terminal command.
-
-On a fresh LAB720 launch, confirm the required tools, package access and assigned-account sign-in before testing planning and execution. Both live operations must show **`Rulebook loaded (3 files)`**. A completed plan should also contain `rulebook-compliance.md` and `.metadata\rulebook-metadata.json` identifying the shared source. Reading local policy files, a prepared compliance report or a passing build is not sufficient evidence of a current native load.
-
-Keep shared-image promotion coordinated with the other module owners. Merging this configuration file or the documentation PR does not install dependencies, copy files into Skillable, capture a VM or complete a fresh-learner rehearsal.
-
-The local gateway validation does not require provisioning Azure SQL or changing the SRE resources. Any separate live DB-assessment exercise still needs its agreed database/context and CLI capability; an inferred data model is not a live database check.
+The self-serve track validates application code locally. It does not provision Azure SQL, deploy applications or require cloud resources. If the lab is also offered from an existing managed VM image, this repository setup does not update that image; an authorized guest-file update and image capture are still required.
