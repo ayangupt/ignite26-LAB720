@@ -48,6 +48,13 @@ function Get-PayloadRoot {
     throw 'The rehearsal archive must contain all six LAB720 start/finish repositories, including their .git directories. The separate final snapshot is not a replacement.'
 }
 
+function Assert-LabArchives {
+    param([Parameter(Mandatory)][string]$LabArchive, [string]$FinalArchive)
+
+    Assert-ArchiveHash -Path $LabArchive -ExpectedHash $script:Packages.rehearsal.sha256
+    if ($FinalArchive) { Assert-ArchiveHash -Path $FinalArchive -ExpectedHash $script:Packages.final.sha256 }
+}
+
 function Assert-FinalSnapshot {
     param([Parameter(Mandatory)][string]$Root)
 
@@ -82,7 +89,7 @@ function Expand-LabContent {
         [string]$FinalArchive
     )
 
-    Assert-ArchiveHash -Path $LabArchive -ExpectedHash $script:Packages.rehearsal.sha256
+    Assert-LabArchives -LabArchive $LabArchive
     $rehearsalDirectory = Join-Path $StagingDirectory 'rehearsal'
     [IO.Compression.ZipFile]::ExtractToDirectory($LabArchive, $rehearsalDirectory)
     $payloadRoot = Get-PayloadRoot -ExtractionDirectory $rehearsalDirectory
@@ -194,4 +201,4 @@ function Assert-LabContent {
     Assert-FinalSnapshot -Root (Join-Path $Root 'modules/module-03-execute/final/dotnet')
 }
 
-Export-ModuleMember -Function Expand-LabContent, Initialize-LabContent, Assert-LabContent, Expand-FinalSnapshot
+Export-ModuleMember -Function Expand-LabContent, Initialize-LabContent, Assert-LabContent, Expand-FinalSnapshot, Assert-LabArchives

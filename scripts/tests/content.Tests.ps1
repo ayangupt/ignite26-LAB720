@@ -250,6 +250,16 @@ try {
     $setupScript = Join-Path $repositoryRoot 'scripts/setup.ps1'
     $destination = Join-Path $testRoot 'installed lab [1]'
     if ($IsWindows) {
+        Test-Case 'Built-in Windows PowerShell forwards setup to PowerShell 7 without installing tools' {
+            # The child has the unmodified production manifest, so the synthetic starting ZIP must fail.
+            $badArchive = Join-Path $testRoot 'not the original.zip'
+            Copy-Item -LiteralPath $archive -Destination $badArchive
+            $result = & powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File $setupScript `
+                -LabArchive $badArchive -FinalArchive $FinalArchive -LabRoot $destination -SkipToolInstallation 2>&1 | Out-String
+            Assert-True ($LASTEXITCODE -ne 0 -and $result -match 'SHA-256 mismatch' -and
+                $result -match 'PowerShell 7 setup failed') "Expected a child checksum failure, got: $result"
+            Assert-True (-not (Test-Path -LiteralPath $destination)) 'Failed handoff wrote a destination.'
+        }
         Test-Case 'The actual Windows setup installs content, README and four configs' {
             & $setupScript -LabArchive $archive -FinalArchive $FinalArchive -LabRoot $destination -SkipToolInstallation
             Assert-LabContent -Root $destination

@@ -30,12 +30,7 @@ Choose the path that matches the materials you have. Neither path requires Skill
 
 The full lab is not yet a standalone public download. The starting archive still needs an approved distribution location, and the installer still needs a clean Windows 11 rehearsal with that archive.
 
-- Windows 11 with [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/). Install PowerShell 7 from Windows PowerShell if needed:
-
-  ```powershell
-  winget install --id Microsoft.PowerShell --exact --accept-package-agreements --accept-source-agreements
-  ```
-
+- Windows 11 with [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/) and permission to install tools.
 - A GitHub account with an active Copilot plan. The modernization agent supports Copilot Free, Pro, Pro+, Business, and Enterprise; see the [official quickstart](https://learn.microsoft.com/en-us/azure/developer/github-copilot-app-modernization/modernization-agent/quickstart) for current requirements.
 - An authorized copy of the **exact LAB720 `caldova-rehearsal.zip` teaching archive** recorded in [the package manifest](infra/workload-manifest.json). Its six historical start/finish repositories are not included here and have no approved public download configured. A facilitator must supply it privately until distribution is approved; do not substitute the final snapshot or redistribute the archive without permission.
 
@@ -43,13 +38,15 @@ The setup script installs Git, GitHub CLI, Visual Studio Code and its Copilot ex
 
 The separate frozen `final\dotnet` checkpoint is downloaded automatically from a pinned, public package with its SHA-256 checked. Although hosted in PREL38, these are the **same bytes used by LAB720**, not a replacement curriculum or a substitute for its deliberately flawed `finish` example.
 
-Clone this repository (or download its source ZIP if Git is not installed), open a terminal in its root, and run setup with the archive path:
+Clone this repository (or download its source ZIP if Git is not installed) and open **Windows PowerShell** in its root. If you downloaded the source ZIP, review the scripts and run `Get-ChildItem -Recurse .\scripts | Unblock-File` first.
+
+Run setup with the archive path. It installs PowerShell 7 if needed, then continues the full setup in that shell:
 
 ```powershell
-pwsh -NoProfile -File .\scripts\setup.ps1 -LabArchive C:\path\to\caldova-rehearsal.zip
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\scripts\setup.ps1 -LabArchive C:\path\to\caldova-rehearsal.zip
 ```
 
-If you downloaded this repository as a ZIP instead of cloning it, run `Get-ChildItem -Recurse .\scripts | Unblock-File` first so PowerShell can run the scripts.
+If you already use PowerShell 7, `pwsh -NoProfile -File .\scripts\setup.ps1 -LabArchive C:\path\to\caldova-rehearsal.zip` runs the same setup directly.
 
 By default, the lab files are installed under `C:\lab\caldova`, matching the guide and historical metadata. Setup will not overwrite an existing lab folder. `-LabRoot` accepts another path that does not yet exist, but relocation of the historical plan/assessment metadata has not been rehearsed; use the default for the first real-content rehearsal.
 

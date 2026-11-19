@@ -1,4 +1,4 @@
-#requires -Version 7.0
+#requires -Version 5.1
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
@@ -14,7 +14,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-if (-not $IsWindows) {
+if ($PSVersionTable.PSEdition -eq 'Core' -and -not $IsWindows) {
     throw 'The automated setup currently supports Windows 11 only. Follow the official tool installation instructions to set up a different platform manually.'
 }
 
@@ -87,7 +87,7 @@ function Install-ModernizeCli {
     }
 }
 
-$archivePath = [IO.Path]::GetFullPath($LabArchive)
+$archivePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($LabArchive)
 if (-not (Test-Path -LiteralPath $archivePath -PathType Leaf)) {
     throw "Lab archive not found: $archivePath. Obtain an authorized Caldova modernization archive before running setup."
 }
@@ -100,9 +100,34 @@ if (-not $SkipToolInstallation -and -not (Test-Command 'winget')) {
     throw 'winget is not available. Install or update App Installer from the Microsoft Store, or rerun with -SkipToolInstallation after installing prerequisites manually.'
 }
 
-$destination = [IO.Path]::GetFullPath($LabRoot)
+$destination = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($LabRoot)
 if (Test-Path -LiteralPath $destination) {
     throw "LabRoot already exists: $destination. Setup will not overwrite a learner workspace; choose a new path or move the existing folder yourself."
+}
+
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+    if (-not (Test-Command 'pwsh.exe')) {
+        if ($SkipToolInstallation) {
+            throw 'PowerShell 7 (pwsh.exe) is required when using -SkipToolInstallation.'
+        }
+        # Reject the wrong input before installing anything on the learner's machine.
+        Assert-LabArchives -LabArchive $archivePath -FinalArchive $FinalArchive
+        Invoke-WinGetInstall -Id 'Microsoft.PowerShell'
+        Sync-SessionPath
+        if (-not (Test-Command 'pwsh.exe')) {
+            throw 'PowerShell 7 was installed but pwsh.exe is not on PATH. Open a new terminal and rerun setup.'
+        }
+    }
+
+    $arguments = @('-NoProfile', '-ExecutionPolicy', 'RemoteSigned', '-File', $PSCommandPath,
+        '-LabArchive', $archivePath, '-LabRoot', $destination)
+    if ($FinalArchive) {
+        $arguments += @('-FinalArchive', $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($FinalArchive))
+    }
+    if ($SkipToolInstallation) { $arguments += '-SkipToolInstallation' }
+    & pwsh.exe @arguments
+    if ($LASTEXITCODE -ne 0) { throw "PowerShell 7 setup failed (exit code $LASTEXITCODE). See the error above." }
+    return
 }
 
 # Stage beside the destination so the final move stays on one volume and extracted paths stay short.
