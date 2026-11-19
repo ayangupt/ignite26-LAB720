@@ -29,6 +29,11 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Download the public checkpoint and run its final gateway tests
-        shell: ${{ matrix.os == 'windows-latest' && 'powershell' || 'pwsh' }}
+      - name: Test the public checkpoint from Windows PowerShell
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: ./scripts/tests/review-final.Tests.ps1
+      - name: Test the public checkpoint from PowerShell 7
+        if: runner.os == 'Linux'
+        shell: pwsh
         run: ./scripts/tests/review-final.Tests.ps1
