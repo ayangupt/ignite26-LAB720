@@ -75,3 +75,16 @@ These checks cover two-package extraction, hash failures, final-file/manifest ta
 The public review is checked separately: `scripts/tests/review-final.Tests.ps1` downloads the real checkpoint, runs its 13 final gateway tests with the .NET 10 SDK, and verifies that the tests did not change the snapshot. CI exercises this path with Windows PowerShell 5.1 and with PowerShell 7 on Linux. It does not use any synthetic or private starting material.
 
 The `windows11-tools` CI job runs `content.Tests.ps1 -InstallParticipantTools` on a disposable Windows 11 ARM64 runner. Unlike the fixture-only jobs, it lets `setup.ps1` install missing tools and extensions and then launches the installed commands. The hosted image already includes some prerequisites. This is not a blank Windows machine, the original workload, or an authenticated Copilot run. Do not opt into this switch on a shared machine just to run the content tests.
+
+### Windows 11 installer rehearsal
+
+[Run 44634605278](https://github.com/microsoft/ignite26-LAB720/actions/runs/44634605278) exercised revision `4e1af08` on Windows 11 Enterprise ARM64, build `10.0.26200`. The WinGet, VS Code and Modernize commands were absent before setup.
+
+| Setup action | Observed result |
+|---|---|
+| Prepared WinGet for the current user | WinGet `1.29.380` |
+| Installed VS Code and used its bundled Copilot Chat without a separate Marketplace install | VS Code `1.146.0`; Copilot Chat `0.74.0` |
+| Installed the stable Modernize CLI | `1.0.95` |
+| Reused tools already present on the image | PowerShell `7.6.10`, Git `2.56.1.windows.1`, GitHub CLI `2.104.0`, .NET 10 SDKs including `10.0.404` |
+
+Setup finished without participant input. The starting repositories were synthetic; only the final checkpoint was the real LAB720 package. This run did not exercise first-time installation of the preinstalled tools, participant sign-in, or the 50-minute exercise. The [full-lab release gate](#teaching-packages-and-release-gate) remains open.
