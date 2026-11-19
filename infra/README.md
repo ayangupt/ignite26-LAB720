@@ -4,7 +4,7 @@ For the self-serve modernization track, `../scripts/setup.ps1` installs the part
 
 ## Teaching packages and release gate
 
-The [LAB720 environment handoff](https://github.com/microsoft/ignite26-lab-management/issues/689) identifies **two distinct ZIPs**, pinned by SHA-256 in [workload-manifest.json](workload-manifest.json):
+The LAB720 environment handoff, [microsoft/ignite26-lab-management#689](https://github.com/microsoft/ignite26-lab-management/issues/689), identifies **two distinct ZIPs**, pinned by SHA-256 in [workload-manifest.json](workload-manifest.json):
 
 | Package | Purpose | Source |
 |---|---|---|
