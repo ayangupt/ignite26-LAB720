@@ -80,6 +80,23 @@ try {
             }
             finally { Remove-Module $tools }
         }
+        Test-Case 'Copilot Chat detection requires the extension manifest, not just a successful CLI exit' {
+            $tools = Import-Module (Join-Path $repositoryRoot 'scripts/LabTools.psm1') -Force -PassThru
+            $extension = Join-Path $testRoot 'bundled extension [1]'
+            $locate = {
+                param($Location)
+                function code { $script:LASTEXITCODE = 0; if ($Location) { $Location } }
+                Test-LabCopilotChat
+            }
+            try {
+                Assert-True (-not (& $tools $locate '')) 'Empty extension lookup was accepted.'
+                Write-FixtureFile $extension 'package.json' '{"publisher":"fixture","name":"copilot-chat","version":"0.1"}'
+                Assert-True (-not (& $tools $locate $extension)) 'An unrelated extension was accepted.'
+                Write-FixtureFile $extension 'package.json' '{"publisher":"GitHub","name":"copilot-chat","version":"0.1"}'
+                Assert-True (& $tools $locate $extension) 'The Copilot Chat manifest was not recognized.'
+            }
+            finally { Remove-Module $tools }
+        }
     }
 
     if (-not $FinalArchive) {
@@ -359,8 +376,8 @@ try {
                 $sdks = @(& dotnet --list-sdks)
                 Assert-True ($LASTEXITCODE -eq 0 -and @($sdks -match '^10\.').Count -gt 0) ".NET 10 SDK missing: $sdks"
                 Write-Host "Installed .NET 10 SDKs: $($sdks -match '^10\.' -join '; ')"
-                $extensions = @(& code --list-extensions)
-                Assert-True ($LASTEXITCODE -eq 0 -and $extensions -contains 'GitHub.copilot-chat') "Copilot Chat extension missing: $extensions"
+                Import-Module (Join-Path $repositoryRoot 'scripts/LabTools.psm1')
+                Assert-True (Test-LabCopilotChat) 'Copilot Chat is neither bundled nor installed.'
             }
         }
         Test-Case 'A second setup refuses to overwrite an installed workspace' {

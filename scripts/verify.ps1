@@ -30,6 +30,9 @@ Import-Module (Join-Path $PSScriptRoot 'LabTools.psm1')
 if (-not (Test-LabGitHubCli)) {
     throw 'GitHub CLI 2.45.0 or later is required.'
 }
+if (-not (Test-LabCopilotChat)) {
+    throw 'GitHub Copilot Chat is missing from VS Code. Install the extension or update VS Code.'
+}
 
 $sdkVersions = @(& dotnet --list-sdks)
 if ($LASTEXITCODE -ne 0 -or @($sdkVersions | Where-Object { $_ -match '^10\.' }).Count -eq 0) {

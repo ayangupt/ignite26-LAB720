@@ -37,7 +37,7 @@ For a self-serve setup with the original archive, follow the [full lab setup](..
    gh auth login
    ```
 
-   Choose **GitHub.com > Login with a web browser**, complete the one-time-code prompt, and authorize GitHub CLI. Then sign in to VS Code with the same GitHub account and ensure the GitHub Copilot extension is enabled. The browser, VS Code and GitHub CLI have separate sessions.
+   Choose **GitHub.com > Login with a web browser**, complete the one-time-code prompt, and authorize GitHub CLI. Then sign in to VS Code with the same GitHub account and enable Copilot in the status bar if prompted. Current VS Code includes GitHub Copilot Chat; you don't need to install the legacy Copilot extension separately. The browser, VS Code and GitHub CLI have separate sessions.
 3. Use **Auto** in VS Code. Every Modernize command below also passes **--model auto**; the VS Code model picker does not set the CLI model.
 
 ### Enter commands

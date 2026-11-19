@@ -17,4 +17,4 @@ if (-not (Get-Module -ListAvailable -Name Microsoft.WinGet.Client)) {
 }
 # A staged Windows image package may not have a matching GitHub release tag.
 # Ask for a published stable release instead of deriving the tag from that package.
-Microsoft.WinGet.Client\Repair-WinGetPackageManager -Latest -Verbose -ErrorAction Stop
+Microsoft.WinGet.Client\Repair-WinGetPackageManager -Latest -ErrorAction Stop

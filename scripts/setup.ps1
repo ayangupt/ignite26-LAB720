@@ -204,11 +204,11 @@ try {
             throw 'The Modernize CLI installation was not detected. Open a new terminal or install it manually from the official quickstart.'
         }
 
-        foreach ($extension in @('GitHub.copilot', 'GitHub.copilot-chat')) {
-            Write-Host "Installing VS Code extension $extension..."
-            & code --install-extension $extension --force
-            if ($LASTEXITCODE -ne 0) {
-                throw "VS Code failed to install extension $extension (exit code $LASTEXITCODE)."
+        if (-not (Test-LabCopilotChat)) {
+            Write-Host 'Installing the GitHub Copilot Chat extension for VS Code...'
+            & code --install-extension GitHub.copilot-chat
+            if ($LASTEXITCODE -ne 0 -or -not (Test-LabCopilotChat)) {
+                throw 'GitHub Copilot Chat was not installed. Update VS Code and retry setup.'
             }
         }
     }
