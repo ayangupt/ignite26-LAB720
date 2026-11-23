@@ -1,8 +1,8 @@
 # LAB720: Modernize application code
 
-This folder contains the Caldova Bank workload for the **50-minute .NET modernization track**. The complete setup and participant guide are in the [LAB720 repository](https://github.com/microsoft/ignite26-LAB720).
+This folder contains the Caldova Bank workload installed on your PC for the **50-minute .NET modernization track**. Keep your LAB720 repository copy: it contains the instructions that match the installer you ran.
 
-Before using these files, install the tools and configure GitHub sign-in by following the repository's [getting-started steps](https://github.com/microsoft/ignite26-LAB720#getting-started).
+Before the session, finish the sign-in and verification steps in that repository's `README.md`. Use your own Copilot-enabled GitHub account in GitHub CLI and VS Code.
 
 | Stage | Time | Your result |
 |---|---|---|
@@ -17,4 +17,4 @@ Read the prepared assessment; do not run a new assessment in this shortened lab.
 
 The exercises use `C:\lab\caldova\modules`. Each module has a `start` and a `finish` folder. The separate `module-03-execute\final\dotnet` snapshot is for comparison; do not replace the deliberately flawed `finish` review example with it.
 
-The [modernization guide](https://github.com/microsoft/ignite26-LAB720/blob/main/instructions/modernize-app-code.md) covers the exact commands and review criteria. This workload does not require an Azure subscription; the prepared gateway checks run locally.
+Open `instructions/modernize-app-code.md` in your repository copy for the exact commands and review criteria. This workload does not require an Azure subscription; the prepared gateway checks run locally.

@@ -19,7 +19,7 @@ Results from your live runs and prepared examples are separate evidence. An unfi
 
 ## Get ready
 
-For a self-serve setup with the original archive, follow the [full lab setup](../README.md#full-lab-setup) and open a new PowerShell 7 terminal. Without the archive, use the separate [public final-checkpoint review](review-final.md); it does not set up the steps below. The default install location below is **C:\lab\caldova**. If you selected another `-LabRoot`, replace that root in the commands and paths in this guide.
+Before the workshop, follow the [full lab setup](../README.md#full-lab-setup) on your own Windows 11 PC using the authorized starting archive and your own Copilot-enabled GitHub account. Open a new PowerShell 7 terminal on that PC for the steps below. Without the archive, use the separate [public final-checkpoint review](review-final.md); it does not set up this walkthrough. The default install location is **C:\lab\caldova**. If you selected another `-LabRoot`, replace that root in the commands and paths in this guide.
 
 ### Check sign-in and tools
 
