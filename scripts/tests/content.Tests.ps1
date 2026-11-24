@@ -404,8 +404,10 @@ try {
         }
     }
     function Remove-FixtureGh {
-        Remove-Item Function:global:gh -ErrorAction SilentlyContinue
+        # Function: paths ignore scope qualifiers; an unqualified path finds the global mock.
+        Remove-Item -LiteralPath Function:\gh -ErrorAction SilentlyContinue
         Remove-Variable FixtureGhCalls, FixtureGhAuthExitCode, FixtureGhResponseFile -Scope Global -ErrorAction SilentlyContinue
+        $global:LASTEXITCODE = 0
     }
     Test-Case 'The release download fetches only the pinned asset and explains access failures' {
         $source = Get-RehearsalSource
