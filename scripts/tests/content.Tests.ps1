@@ -125,8 +125,8 @@ try {
             if ($module -eq 'module-01-assess' -and $state -eq 'start') {
                 $report = '.github/modernize/assessment-prebuilt/reports-fixture'
                 Write-FixtureFile $repo "$report/index.html" '<html>Fixture report</html>'
-                Write-FixtureFile $repo "$report/repos/CaldovaAuthGateway/facts/data-architecture.md"
-                Write-FixtureFile $repo "$report/repos/CaldovaAuthGateway/facts/configuration-inventory.md"
+                Write-FixtureFile $repo "$report/repos/ZavaAuthGateway/facts/data-architecture.md"
+                Write-FixtureFile $repo "$report/repos/ZavaAuthGateway/facts/configuration-inventory.md"
             }
             if ($module -eq 'module-02-plan' -and $state -eq 'start') {
                 foreach ($file in @('goals/dotnet.txt', 'skills/pii-masking/SKILL.md',
@@ -250,7 +250,7 @@ try {
         Initialize-LabContent -Root $payload
     }
     Test-Case 'Missing assessment facts fail validation' {
-        $file = Join-Path $payload 'modules/module-01-assess/start/.github/modernize/assessment-prebuilt/reports-fixture/repos/CaldovaAuthGateway/facts/data-architecture.md'
+        $file = Join-Path $payload 'modules/module-01-assess/start/.github/modernize/assessment-prebuilt/reports-fixture/repos/ZavaAuthGateway/facts/data-architecture.md'
         Move-Item -LiteralPath $file -Destination "$file.saved"
         Assert-Throws { Assert-LabContent -Root $payload } '*assessment is missing*'
         Move-Item -LiteralPath "$file.saved" -Destination $file
@@ -350,7 +350,7 @@ try {
     Test-Case 'An omitted or unsafe rehearsal URL cannot enable a download' {
         try {
             & $contentModule { $script:Packages.rehearsal.url = $null }
-            Assert-Throws { Get-RehearsalDownloadUri } '*No approved download*-LabArchive*review-final.ps1*'
+            Assert-Throws { Get-RehearsalDownloadUri } '*No download is configured*-LabArchive*review-final.ps1*'
             foreach ($invalid in @('http://example.invalid/a.zip', 'file:///archive.zip',
                 'https://user@example.invalid/a.zip', 'https://example.invalid/a.zip?token=example',
                 'https://example.invalid/a.zip#fragment')) {
@@ -362,18 +362,100 @@ try {
             & $contentModule { param($Value) $script:Packages.rehearsal.url = $Value } $packages.rehearsal.url
         }
     }
+    function Set-ReleaseSource {
+        param($Value)
+        & $contentModule { param($Release) $script:Packages.rehearsal.githubRelease = $Release } $Value
+    }
+    Test-Case 'The starting archive comes from the pinned private release unless a source is invalid' {
+        try {
+            $source = Get-RehearsalSource
+            Assert-True ($source.Kind -ceq 'GitHubRelease' -and
+                $source.Repository -ceq $packages.rehearsal.githubRelease.repository -and
+                $source.Tag -ceq $packages.rehearsal.githubRelease.tag -and
+                $source.Asset -ceq 'caldova-rehearsal.zip') 'The release source does not match the manifest.'
+            foreach ($invalid in @(
+                [pscustomobject]@{repository='not a repo'; tag='v1'; asset='caldova-rehearsal.zip'},
+                [pscustomobject]@{repository='owner/repo'; tag='v1 --clobber'; asset='caldova-rehearsal.zip'},
+                [pscustomobject]@{repository='owner/repo'; tag='v1'; asset='*.zip'},
+                [pscustomobject]@{repository='owner/repo'})) {
+                Set-ReleaseSource $invalid
+                Assert-Throws { Get-RehearsalSource } '*must name an owner/repository*'
+            }
+            Set-ReleaseSource $null
+            Assert-Throws { Get-RehearsalSource } '*No download is configured*-LabArchive*review-final.ps1*'
+        }
+        finally { Set-ReleaseSource $packages.rehearsal.githubRelease }
+    }
+    function Set-FixtureGh {
+        param([int]$AuthExitCode = 0, [string]$ResponseFile)
+        $global:FixtureGhCalls = [Collections.Generic.List[string]]::new()
+        $global:FixtureGhAuthExitCode = $AuthExitCode
+        $global:FixtureGhResponseFile = $ResponseFile
+        function global:gh {
+            $global:FixtureGhCalls.Add($args -join ' ')
+            $global:LASTEXITCODE = 1
+            if ($args[0] -eq 'auth') { $global:LASTEXITCODE = $global:FixtureGhAuthExitCode }
+            elseif ($args[0] -eq 'release' -and $global:FixtureGhResponseFile) {
+                $directory = $args[[array]::IndexOf($args, '--dir') + 1]
+                $asset = $args[[array]::IndexOf($args, '--pattern') + 1]
+                Copy-Item -LiteralPath $global:FixtureGhResponseFile -Destination (Join-Path $directory $asset)
+                $global:LASTEXITCODE = 0
+            }
+        }
+    }
+    function Remove-FixtureGh {
+        Remove-Item Function:global:gh -ErrorAction SilentlyContinue
+        Remove-Variable FixtureGhCalls, FixtureGhAuthExitCode, FixtureGhResponseFile -Scope Global -ErrorAction SilentlyContinue
+    }
+    Test-Case 'The release download fetches only the pinned asset and explains access failures' {
+        $source = Get-RehearsalSource
+        $downloads = Join-Path $testRoot 'release-download'
+        [IO.Directory]::CreateDirectory($downloads) | Out-Null
+        $access = "*read access to https://github.com/$($source.Repository)*-LabArchive*"
+        try {
+            Set-FixtureGh -ResponseFile $archive
+            $saved = Save-RehearsalFromGitHubRelease -Source $source -Directory $downloads
+            Assert-True ($saved -ceq (Join-Path $downloads 'caldova-rehearsal.zip') -and (Test-Path -LiteralPath $saved -PathType Leaf)) 'The release asset was not saved.'
+            Assert-True ($global:FixtureGhCalls[-1] -ceq "release download $($source.Tag) --repo $($source.Repository) --pattern caldova-rehearsal.zip --dir $downloads") "Unexpected gh call: $($global:FixtureGhCalls[-1])"
+            Remove-Item -LiteralPath $saved
+
+            Set-FixtureGh -AuthExitCode 1 -ResponseFile $archive
+            Assert-Throws { Save-RehearsalFromGitHubRelease -Source $source -Directory $downloads } "*gh auth login*$access"
+            Assert-True (@($global:FixtureGhCalls -like 'release*').Count -eq 0) 'A signed-out download was attempted.'
+
+            Set-FixtureGh
+            Assert-Throws { Save-RehearsalFromGitHubRelease -Source $source -Directory $downloads } "*Could not download*$access"
+        }
+        finally { Remove-FixtureGh }
+    }
     if ($IsWindows) {
         Test-Case 'Full setup without a source gives both supported options before creating files' {
             try {
                 & $contentModule { $script:Packages.rehearsal.url = $null }
+                Set-ReleaseSource $null
                 function Invoke-WebRequest { throw 'Unexpected network request' }
-                Assert-Throws { & $setupScript -LabRoot $destination } '*No approved download*-LabArchive*review-final.ps1*'
+                Assert-Throws { & $setupScript -LabRoot $destination } '*No download is configured*-LabArchive*review-final.ps1*'
                 Assert-True (-not (Test-Path -LiteralPath $destination)) 'Setup without a source wrote a destination.'
                 Assert-True (@(Get-ChildItem -LiteralPath $testRoot -Directory -Force -Filter '.lab720-staging-*').Count -eq 0) 'Staging leaked.'
             }
             finally {
                 & $contentModule { param($Value) $script:Packages.rehearsal.url = $Value } $packages.rehearsal.url
+                Set-ReleaseSource $packages.rehearsal.githubRelease
             }
+        }
+        Test-Case 'Setup without -LabArchive downloads the release asset through the same checksum gate' {
+            $fromRelease = Join-Path $testRoot 'release installation'
+            try {
+                Set-FixtureGh -ResponseFile $FinalArchive
+                Assert-Throws { & $setupScript -FinalArchive $FinalArchive -LabRoot $fromRelease -SkipToolInstallation } '*SHA-256 mismatch*'
+                Assert-True (-not (Test-Path -LiteralPath $fromRelease)) 'Wrong release asset installed a workspace.'
+                Assert-True (@(Get-ChildItem -LiteralPath $testRoot -Directory -Force -Filter '.lab720-staging-*').Count -eq 0) 'Rejected release asset was retained.'
+                Set-FixtureGh -ResponseFile $archive
+                & $setupScript -FinalArchive $FinalArchive -LabRoot $fromRelease -SkipToolInstallation
+                Assert-LabContent -Root $fromRelease
+                Assert-True (@(Get-ChildItem -LiteralPath $testRoot -Directory -Force -Filter '.lab720-staging-*').Count -eq 0) 'Downloaded release asset was retained.'
+            }
+            finally { Remove-FixtureGh }
         }
         Test-Case 'A configured rehearsal download uses the same checksum gate and full install as local input' {
             $source = 'https://example.invalid/lab720-fixture.zip'

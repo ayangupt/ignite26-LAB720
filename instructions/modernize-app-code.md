@@ -19,7 +19,7 @@ Results from your live runs and prepared examples are separate evidence. An unfi
 
 ## Get ready
 
-Before the workshop, follow the [full lab setup](../README.md#full-lab-setup) on your own Windows 11 PC using the authorized starting archive and your own Copilot-enabled GitHub account. Open a new PowerShell 7 terminal on that PC for the steps below. Without the archive, use the separate [public final-checkpoint review](review-final.md); it does not set up this walkthrough. The default install location is **C:\lab\caldova**. If you selected another `-LabRoot`, replace that root in the commands and paths in this guide.
+Before the workshop, follow the [full lab setup](../README.md#full-lab-setup) on your own Windows 11 PC with your own Copilot-enabled GitHub account; setup downloads the starting archive once your account has read access to the LAB720 materials repository. Open a new PowerShell 7 terminal on that PC for the steps below. Without that access, use the separate [public final-checkpoint review](review-final.md); it does not set up this walkthrough. The default install location is **C:\lab\caldova**. If you selected another `-LabRoot`, replace that root in the commands and paths in this guide.
 
 ### Check sign-in and tools
 
@@ -70,7 +70,7 @@ Normally, you run **modernize assess** to generate an assessment report before p
 
 ### Inspect the gateway's database risks
 
-1. Review the portfolio, then open **repos\CaldovaAuthGateway** inside that report folder.
+1. Review the portfolio, then open **repos\ZavaAuthGateway** inside that report folder. The prepared report was generated before the apps were renamed, so it lists them by their earlier Zava names; ZavaAuthGateway is the Caldova sign-in gateway.
 2. Open **facts\data-architecture.md** and **facts\configuration-inventory.md** there. Find **System.Data.SqlClient**, SQL-login settings (**DB_USER** and **DB_PASSWORD**), and certificate-validation settings.
 
 These are application-code findings, **not a live database assessment**. An inferred data model does not prove that tables or seed data exist, that a connection works, or that a migration completed.

@@ -100,17 +100,19 @@ function Install-ModernizeCli {
     }
 }
 
+$archivePath = $null
+$rehearsalSource = $null
 if ($LabArchive) {
     $archivePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($LabArchive)
     if (-not (Test-Path -LiteralPath $archivePath -PathType Leaf)) {
-        throw "Lab archive not found: $archivePath. Obtain an authorized Caldova modernization archive before running setup."
+        throw "Lab archive not found: $archivePath. Check the path, or omit -LabArchive to download the starting archive with your GitHub account."
     }
     if ([IO.Path]::GetExtension($archivePath) -ine '.zip') {
         throw 'LabArchive must be a .zip file.'
     }
 }
 else {
-    $rehearsalUri = Get-RehearsalDownloadUri
+    $rehearsalSource = Get-RehearsalSource
 }
 Sync-SessionPath
 
@@ -125,10 +127,14 @@ $destinationParent = [IO.Path]::GetDirectoryName($destination)
 $stagingDirectory = Join-Path $destinationParent ".lab720-staging-$([guid]::NewGuid().ToString('N').Substring(0, 8))"
 try {
     [IO.Directory]::CreateDirectory($stagingDirectory) | Out-Null
-    if (-not $LabArchive) {
+    if ($rehearsalSource -and $rehearsalSource.Kind -eq 'Url') {
         $archivePath = Join-Path $stagingDirectory 'caldova-rehearsal.zip'
         Write-Host 'Downloading the LAB720 starting archive from the configured source...'
-        Invoke-WebRequest -UseBasicParsing -Uri $rehearsalUri -OutFile $archivePath
+        Invoke-WebRequest -UseBasicParsing -Uri $rehearsalSource.Uri -OutFile $archivePath
+    }
+    elseif ($rehearsalSource -and ((Test-Command 'gh') -or $SkipToolInstallation)) {
+        # Check archive access before installing tools when gh is already available.
+        $archivePath = Save-RehearsalFromGitHubRelease -Source $rehearsalSource -Directory $stagingDirectory
     }
     if ($PSVersionTable.PSVersion.Major -lt 7) {
         if (-not (Test-Command 'pwsh.exe')) {
@@ -146,7 +152,8 @@ try {
         }
 
         $arguments = @('-NoProfile', '-ExecutionPolicy', 'RemoteSigned', '-File', $PSCommandPath,
-            '-LabArchive', $archivePath, '-LabRoot', $destination)
+            '-LabRoot', $destination)
+        if ($archivePath) { $arguments += @('-LabArchive', $archivePath) }
         if ($FinalArchive) {
             $arguments += @('-FinalArchive', $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($FinalArchive))
         }
@@ -155,7 +162,13 @@ try {
         if ($LASTEXITCODE -ne 0) { throw "PowerShell 7 setup failed (exit code $LASTEXITCODE). See the error above." }
         return
     }
-    $payloadRoot = Expand-LabContent -LabArchive $archivePath -FinalArchive $FinalArchive -StagingDirectory $stagingDirectory
+    $payloadRoot = $null
+    if ($archivePath) {
+        $payloadRoot = Expand-LabContent -LabArchive $archivePath -FinalArchive $FinalArchive -StagingDirectory $stagingDirectory
+    }
+    else {
+        Assert-LabArchives -FinalArchive $FinalArchive
+    }
 
     $configSource = Join-Path $PSScriptRoot '..\infra\modernize-config.json'
     if (-not (Test-Path -LiteralPath $configSource -PathType Leaf)) {
@@ -211,6 +224,11 @@ try {
                 throw 'GitHub Copilot Chat was not installed. Update VS Code and retry setup.'
             }
         }
+    }
+
+    if (-not $archivePath) {
+        $archivePath = Save-RehearsalFromGitHubRelease -Source $rehearsalSource -Directory $stagingDirectory
+        $payloadRoot = Expand-LabContent -LabArchive $archivePath -FinalArchive $FinalArchive -StagingDirectory $stagingDirectory
     }
 
     if (-not (Test-Command 'git')) {

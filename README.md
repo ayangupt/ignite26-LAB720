@@ -22,17 +22,17 @@ Run the lab on your own computer. You don't need a Skillable VM, an assigned lab
 | What you have | Where to start |
 |---|---|
 | Just this repository | [Review the public final checkpoint](instructions/review-final.md). Trace a gateway risk from assessment to plan to final code. One command fetches the checkpoint and can run the gateway tests, downloading a temporary .NET 10 SDK if needed. No Copilot account or starting archive needed. |
-| This repository and an authorized `caldova-rehearsal.zip` | [Set up the full 50-minute lab](#full-lab-setup). Review the original assessment, plan and deliberately flawed `finish`, and work through planning and execution. |
+| This repository and read access to the private [LAB720 materials repository](https://github.com/ayangupt/ignite26-LAB720-materials) | [Set up the full 50-minute lab](#full-lab-setup). Setup downloads the starting archive for you. Review the original assessment, plan and deliberately flawed `finish`, and work through planning and execution. |
 
 <a id="full-lab-setup"></a>
 
 #### Full lab setup (Windows 11 preview)
 
-Before the session, run setup directly on the Windows 11 PC you'll use for the exercises. The full lab is still a preview: the starting archive needs an approved distribution location, and the walkthrough has not yet been rehearsed on a participant PC with that archive.
+Before the session, run setup directly on the Windows 11 PC you'll use for the exercises. The full lab is still a preview: the walkthrough has not yet been rehearsed on a participant PC with the real starting archive.
 
 - Windows 11 with permission to install tools. If [WinGet](https://learn.microsoft.com/en-us/windows/package-manager/winget/) is missing, setup uses Microsoft's `Microsoft.WinGet.Client` module from the PowerShell Gallery to prepare App Installer for the current user. If your organization manages App Installer, ask your administrator to provide it instead.
 - A GitHub account with an active Copilot plan. The modernization agent supports Copilot Free, Pro, Pro+, Business, and Enterprise; see the [official quickstart](https://learn.microsoft.com/en-us/azure/developer/github-copilot-app-modernization/modernization-agent/quickstart) for current requirements.
-- An authorized copy of the **exact LAB720 `caldova-rehearsal.zip` teaching archive** recorded in [the package manifest](infra/workload-manifest.json). Its six historical start/finish repositories are not included here and have no approved public download configured. A facilitator must supply it privately until distribution is approved; do not substitute the final snapshot or redistribute the archive without permission.
+- Read access for that GitHub account to the private [LAB720 materials repository](https://github.com/ayangupt/ignite26-LAB720-materials). Its `lab720-materials-v1` release holds the **exact `caldova-rehearsal.zip` teaching archive** recorded in [the package manifest](infra/workload-manifest.json): the six original start/finish repositories with their Git history and the prepared assessment. The application code isn't licensed for public redistribution, so it isn't in this repository. Ask your lab organizer for access, and don't redistribute the archive or substitute the final snapshot.
 
 Setup installs tools directly on your PC, and they remain installed after the lab. It checks for Git, GitHub CLI, Visual Studio Code and the .NET 10 SDK, runs the Modernize CLI installer, and uses VS Code's bundled GitHub Copilot Chat when present. On a managed work PC, follow your organization's software installation policy. If you can't install the prerequisites, you can still do the [read-only checkpoint review](instructions/review-final.md) in built-in Windows PowerShell.
 
@@ -42,15 +42,17 @@ The separate frozen `final\dotnet` checkpoint is downloaded automatically from a
 
 Clone this repository (or download its source ZIP if Git is not installed) and open **Windows PowerShell** in its root. If you downloaded the source ZIP, review the scripts and run `Get-ChildItem -Recurse .\scripts | Unblock-File` first.
 
-Run setup with the archive path. It installs PowerShell 7 if needed, then continues the full setup in that shell:
+Run setup. It installs PowerShell 7 if needed, then continues the full setup in that shell:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\scripts\setup.ps1 -LabArchive C:\path\to\caldova-rehearsal.zip
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\scripts\setup.ps1
 ```
 
-For this preview, omitting `-LabArchive` stops setup before it installs tools. There is no approved starting-archive download in the manifest yet.
+Setup downloads the starting archive with GitHub CLI. If `gh` is already installed, it downloads first, so a missing permission stops setup before any tools are installed; otherwise it installs GitHub CLI and then downloads. If you aren't signed in, setup runs `gh auth login` and opens your browser. Sign in with the account that has access to the materials repository, ideally the same Copilot-enabled account you'll use for the lab.
 
-If you already use PowerShell 7, `pwsh -NoProfile -File .\scripts\setup.ps1 -LabArchive C:\path\to\caldova-rehearsal.zip` runs the same setup directly.
+If you already have a copy of the archive (for example, on an offline PC), add `-LabArchive C:\path\to\caldova-rehearsal.zip`. Setup checks its SHA-256 the same way and skips the download.
+
+If you already use PowerShell 7, `pwsh -NoProfile -File .\scripts\setup.ps1` runs the same setup directly.
 
 By default, the lab files are installed under `C:\lab\caldova`, matching the guide and historical metadata. Setup will not overwrite an existing lab folder. `-LabRoot` accepts another path that does not yet exist, but relocation of the historical plan/assessment metadata has not been rehearsed; use the default for the first real-content rehearsal.
 
@@ -73,7 +75,7 @@ Verification checks the teaching-file layout, all 84 frozen-final hashes, tools,
 
 #### For Tech Connect organizers
 
-If attendees have only the repository, share the [public checkpoint review](instructions/review-final.md). For the full 50-minute workshop, arrange authorized access to the original archive first. Ask attendees to complete setup and sign-in on their own Windows 11 PCs **before** the session so the workshop time is available for the [modernization exercises](instructions/modernize-app-code.md).
+If attendees have only the repository, share the [public checkpoint review](instructions/review-final.md). For the full 50-minute workshop, give each attendee's GitHub account **Read** access to the private [LAB720 materials repository](https://github.com/ayangupt/ignite26-LAB720-materials), or ask its owner to. If you move the archive to your own private repository or organization, upload the same `caldova-rehearsal.zip` as a release asset and update only `rehearsal.githubRelease` in [the package manifest](infra/workload-manifest.json); never change the recorded hash. Ask attendees to complete setup and sign-in on their own Windows 11 PCs **before** the session so the workshop time is available for the [modernization exercises](instructions/modernize-app-code.md).
 
 ### 🎯 Learning outcomes
 

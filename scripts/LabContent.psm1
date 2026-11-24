@@ -49,16 +49,16 @@ function Get-PayloadRoot {
 }
 
 function Assert-LabArchives {
-    param([Parameter(Mandatory)][string]$LabArchive, [string]$FinalArchive)
+    param([string]$LabArchive, [string]$FinalArchive)
 
-    Assert-ArchiveHash -Path $LabArchive -ExpectedHash $script:Packages.rehearsal.sha256
+    if ($LabArchive) { Assert-ArchiveHash -Path $LabArchive -ExpectedHash $script:Packages.rehearsal.sha256 }
     if ($FinalArchive) { Assert-ArchiveHash -Path $FinalArchive -ExpectedHash $script:Packages.final.sha256 }
 }
 
 function Get-RehearsalDownloadUri {
     $source = $script:Packages.rehearsal.url
     if ([string]::IsNullOrWhiteSpace($source)) {
-        throw 'No approved download is configured for the LAB720 starting archive. Pass -LabArchive with an authorized local copy of caldova-rehearsal.zip. If you only have the clone, use scripts/review-final.ps1 for the final-checkpoint review.'
+        throw 'No download is configured for the LAB720 starting archive. Pass -LabArchive with an authorized local copy of caldova-rehearsal.zip. If you only have the clone, use scripts/review-final.ps1 for the final-checkpoint review.'
     }
 
     $uri = $null
@@ -67,6 +67,65 @@ function Get-RehearsalDownloadUri {
         throw 'rehearsal.url must be a stable HTTPS download URL without credentials, a query string or a fragment.'
     }
     return $uri
+}
+
+function Get-RehearsalSource {
+    if (-not [string]::IsNullOrWhiteSpace($script:Packages.rehearsal.url)) {
+        return [pscustomobject]@{ Kind = 'Url'; Uri = Get-RehearsalDownloadUri }
+    }
+
+    $releaseProperty = $script:Packages.rehearsal.PSObject.Properties['githubRelease']
+    if (-not $releaseProperty -or -not $releaseProperty.Value) {
+        throw 'No download is configured for the LAB720 starting archive. Pass -LabArchive with an authorized local copy of caldova-rehearsal.zip. If you only have the clone, use scripts/review-final.ps1 for the final-checkpoint review.'
+    }
+    $release = @{}
+    foreach ($name in @('repository', 'tag', 'asset')) {
+        $field = $releaseProperty.Value.PSObject.Properties[$name]
+        $release[$name] = if ($field) { [string]$field.Value } else { '' }
+    }
+    if ($release.repository -notmatch '^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$' -or
+        $release.tag -notmatch '^[A-Za-z0-9._-]+$' -or
+        $release.asset -cne $script:Packages.rehearsal.fileName) {
+        throw 'rehearsal.githubRelease must name an owner/repository, a release tag and the caldova-rehearsal.zip asset.'
+    }
+    return [pscustomobject]@{
+        Kind       = 'GitHubRelease'
+        Repository = $release.repository
+        Tag        = $release.tag
+        Asset      = $release.asset
+    }
+}
+
+function Save-RehearsalFromGitHubRelease {
+    param(
+        [Parameter(Mandatory)]$Source,
+        [Parameter(Mandatory)][string]$Directory
+    )
+
+    $help = "Ask your lab organizer to give your GitHub account read access to https://github.com/$($Source.Repository), or pass -LabArchive with a local copy of $($Source.Asset). If you only have the clone, use scripts/review-final.ps1 for the final-checkpoint review."
+    if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+        throw "GitHub CLI (gh) is required to download the LAB720 starting archive. $help"
+    }
+
+    & gh auth status --hostname github.com *> $null
+    if ($LASTEXITCODE -ne 0) {
+        # gh auth login --web waits for a browser, so only start it when someone can respond.
+        if ([Environment]::UserInteractive -and -not [Console]::IsInputRedirected -and -not $env:CI) {
+            Write-Host 'Sign in to GitHub so setup can download the LAB720 starting archive...'
+            & gh auth login --hostname github.com --web --git-protocol https
+        }
+        if ($LASTEXITCODE -ne 0) {
+            throw "Sign in to GitHub with 'gh auth login', then rerun setup. $help"
+        }
+    }
+
+    Write-Host "Downloading $($Source.Asset) from $($Source.Repository) release $($Source.Tag)..."
+    & gh release download $Source.Tag --repo $Source.Repository --pattern $Source.Asset --dir $Directory
+    $archive = Join-Path $Directory $Source.Asset
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $archive -PathType Leaf)) {
+        throw "Could not download the LAB720 starting archive with your GitHub account. $help"
+    }
+    return $archive
 }
 
 function Assert-FinalSnapshot {
@@ -228,10 +287,11 @@ function Assert-LabContent {
         throw "The prepared LAB720 assessment directory is missing: $assessmentRoot"
     }
     $reports = @(Get-ChildItem -LiteralPath $assessmentRoot -Directory -Filter 'reports-*')
+    # The prepared report predates the Caldova rename, so it lists the gateway as ZavaAuthGateway.
     $completeReports = @($reports | Where-Object {
         (Test-Path -LiteralPath (Join-Path $_.FullName 'index.html') -PathType Leaf) -and
-        (Test-Path -LiteralPath (Join-Path $_.FullName 'repos/CaldovaAuthGateway/facts/data-architecture.md') -PathType Leaf) -and
-        (Test-Path -LiteralPath (Join-Path $_.FullName 'repos/CaldovaAuthGateway/facts/configuration-inventory.md') -PathType Leaf)
+        (Test-Path -LiteralPath (Join-Path $_.FullName 'repos/ZavaAuthGateway/facts/data-architecture.md') -PathType Leaf) -and
+        (Test-Path -LiteralPath (Join-Path $_.FullName 'repos/ZavaAuthGateway/facts/configuration-inventory.md') -PathType Leaf)
     })
     if ($completeReports.Count -eq 0) {
         throw 'The prepared LAB720 assessment is missing its report or gateway database/configuration facts.'
@@ -239,4 +299,4 @@ function Assert-LabContent {
     Assert-FinalSnapshot -Root (Join-Path $Root 'modules/module-03-execute/final/dotnet')
 }
 
-Export-ModuleMember -Function Expand-LabContent, Initialize-LabContent, Assert-LabContent, Expand-FinalSnapshot, Assert-LabArchives, Get-RehearsalDownloadUri
+Export-ModuleMember -Function Expand-LabContent, Initialize-LabContent, Assert-LabContent, Expand-FinalSnapshot, Assert-LabArchives, Get-RehearsalDownloadUri, Get-RehearsalSource, Save-RehearsalFromGitHubRelease
